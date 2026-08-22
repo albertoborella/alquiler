@@ -1,8 +1,53 @@
 Tengo creada la estructura canónica de documentación SDD en la carpeta docs/. Leé docs/README.md y la carpeta docs/.ai/ para entender las reglas de trabajo del proyecto. A partir de las ideas que voy a escribiendote de a poco, quiero que empecemos a completar progresivamente los documentos siguiendo el paradigma SDD.
 
---- Prompt 1 (2026-08-19) ---
-Mira, "arriendo" es un sistema de gestion de alquileres de una inmobiliaria, que gestiona los inmuebles que tiene disponibles para su alquiler. El sistema gestionará todos los inmuebles, los que tienen categorias de "urbanos" o "rurales". Los inmuebles rurales son campos rurales para alquilar. El sistema debe gestionar propietarios de inmueble, inquilinos, contratos, fecha de inicio del contrato, fecha de fin del contrato. Tambien cada contrato tendra una lista de pagos mensuales con el campo fecha de cobro y monto cobrado. Cada inmueble mostrado tendra un tags que indique si esta alquilado o disponible. Antes de pasarte mas detalles me di cuenta que no te pase la url del repo de github del proyecto:
-git@github.com:albertoborella/arriendo.git
+Mira, "alquiler" es un sistema de gestion de alquileres de una inmobiliaria, que gestiona los inmuebles que tiene disponibles para su alquiler. El sistema gestionará todos los inmuebles, los que pueden ser de categorias "urbanos" o "rurales". Los inmuebles rurales son campos rurales para alquilar. El sistema debe gestionar propietarios de inmuebles, inquilinos, contratos, fecha de inicio del contrato, fecha de fin del contrato. Tambien cada contrato tendra una lista de cobros mensuales con un campo fecha de cobro y otro monto cobrado. Cada inmueble mostrado tendra un tags que indique si esta alquilado o disponible. Cada inmueble alquilado tendrá un propietario de inmueble, un inquilino, fecha inicial del contrato y fecha final del contrato, una fecha maxima de pago, que podría ser los primeros 10 dias de cada mes. Antes de pasarte mas detalles me di cuenta que no te pase la url del repo de github del proyecto:
+git@github.com:albertoborella/alquiler.git
 
-Quiero hacer una aplicacion de uso comercial de una inmobiliaria, donde los usuarios son restringidos, no son púbicos. En la aplicacion se podrá gestionar inquilinos, agregar, modificar y listar.Tambien se gestionarán inmuebles, que tendran categorias como por ejemplo Rurales, Urbanas, y alguna otra categoria que me puedas sugerir. Ademas esos inmuebles, pueden estar alquilados o disponibles. Los inmuebles tendran un precio mensual que se podrá indexar en forma automática si se realiza con algún indice que se debera normalizar o puede variar su precio según la evolucion de alguna moneda extranjera o valor de algun producto como por ejemplo Litro de leche o kilo de novillo para el caso de alquileres rurales, con distinta frecuencia según el contrato. El sistema en si, deberña ser un sitio de administracion, donde se registrarán pagos mensuales y se guardan los pagos históricos. Ese sitio administrativo, podrá filtrar inmuebles ocupados, inmuebles disponibles,pagos realizados, inquilinos con pagos retrasados, y tambien por propietario.
+Los propietarios pueden tener mas de un inmueble, y los inquilinos tambien pueden alquilar mas de un inmueble. La fecha máxima de cobro, antes de entrar en un estado de morosidad, pueden variar por contrato. Tambien la modalidad d alquiler puede variar segun el inmueble o el contrato, pudiendo ser en pesos y estos pesos pueden indexarse por distintos tipos de indices, y en un plazo variable, mensual, trimestral, anual o al finalizar el contrato y querer renovarlo por ejemplo, etc. Tambien se puede alquilar directamente en moneda extranjera y segun la cotizacion del dia de pago se le asigna los pesos cobrados, pero no debería perderse el dato que el pago se hizo en moneda extranjera. Otra modalidad como son los inmuebles rurales, es el pago en pesos pero teniendo como referencia el precio de productos diversos, por ejemplo xx cantidad de soja por hectarea, o xx cantidad de kilos de novillo por hectarea, etc.
 
+No, los productos agropecuarios se pagan siempre en pesoscon referencia al precio del producto, pero si puede variar de donde se toma el precio de referencia, por ejemplo bolsa de cereales de rosario, precio del novillo de algun mercado en particular etc.
+
+Me olvidaba de comentarte que un inmueble puede tener mas de un propietario por ejemplo en una sociedad, hermanos, etc, y que cada uno de los propietarios perciba diferentes importes segun la participacion. Otra cosa que tambien me olvidaba es que el alquiler puede o no facturarce, por lo que cada cobranza de alquiler deberá referirse a la factura que se ha realizado o si no hay factura a un comprobante que tenga alguna numeracion, que no sea una factura, simplemente un comprobante tipo X
+
+Tambien te quiero decir que en el caso de que sea mas de un propietario de un determinado inmueble, cada propietario factura según su porcentaje de participación o si no hay facturacion se crea un comprobante X por propietario seún su participacion.
+
+Mañana o mas tarde seguiremos con requirements, pero ahora quisiera que me comitees todo el proyecto en el repositorio que te he pasado, y me hagas tambien el push al repositorio de github.
+
+Antes de seguir con requirements, he notado que ademas de poder registrar inquilinos, tambien debo poder registrar inmuebles y propietarios, y por supuesto poder gestionarlos ingresando nuevos, modificando, listando y eliminando, tanto inquilinos, inmuebles y propietarios.
+
+Ok. Para comenzar con requerimientos te quisiera primero indicar como tiene que funcionar el sistema. En cuano a los usuarios del sistema, son cerrados, y se refieren al personal de la inmobiliaria. Aquí deberiamos diferenciar el rol de administrador, rol empleado y rol contable. El administrador, tendrá acceso a todo el sistema y su funcionalidad, el rol empleado, se restringirá la posibilidad de registrar cobros, eliminar inmuebles, propietarios, cobros, contratos, etc. Si podrá visualizar los datos, y el rol contable podrá registrar cobranzas también. El login de acceso será sencillo, con email y contraseña. Todo lo que es el sistema de seguridad lo haremos utilizando JWT. Al ingresar al sistema nos mostraria en forma de tabla la totalidad de inmuebles ordenados por propietario, con un tag que indique se esta alquilado o no alquilado, de diferente color. Luego podremos seleccionar el inmueble e ingresar en el panel de ese inmueble donde figuraran todos sus datos, comodidades, superficie, habitaciones, banos, dormitorios, direccion, etc. Si el inmueble esta alquilado, a travez de un boton de cobros se podrá ingresar la cobranza del alquiler. Tambien debería haber en cada inmueble la posibilidad de cargar los diferentes contratos de alquiler, indicando los que han sido cumplidos o el que está vigente. Se podra ver tambien un listado historico de cobranzas del contrato vigente, cual es la fecha de caducidad. Desde la pagina inicial con la tabla de inmuebles, podremos ver la totalidad de inmuebles de un determinado propietario para el caso que tenga mas de uno. En ese caso se podrá hacer un informe que indique los cobros de cada inmueble de su propiedad en forma mensual. Tambien deberiamos poder ver listado de todos los inmuebles en alquiler los cobros realizados durante un determinado mes, y en el caso de que alguno esta sin haberse realizado el cobro del alquiler y la fecha maxima de cobro fuera superada deberá tener un tags de Morosidad. Luego te ire pasando otras funcionalidades.
+
+Crees que debo considerar otras funcionalidades segun tu consejo o lo vemos mas adelante si vemos que son necesarias otras salidas? O documentamos lo que tenemos hasta ahora?
+
+De acuerdo, documentemos lo que tenemos hasta ahora y sigamos con los requisitos formales, y para eso quiero que me preguntes lo que consideres para lo que falta de los requisitos.
+
+Bloque 1.
+1. Eliminacion con dependencias:
+No se puede eliminar un inquilino con contrato activo, y si ha alquildo algun inmueble alguna vez tampoco para no perder sus registros.
+No, Si tiene un inmueble en la inmobiliaria no se puede eliminar un propietario, tanto si tiene un contrato activo o el inmueble que aún no lo ha alquilado.
+No, no se puede eliminar un inmueble que tiene un contrato activo y tampoco si el inmueble fue ingresado a la inmobiliaria para su alquiler. Si se debería poder eliminar si el propietrio, retira el inmueble de la inmobiliaria. este sería una eliminacion que solo podría hacer el administrador general.
+2. Copropiedad:
+Cuando hay varios propietarios de un mismo inmueble, el contrato es firmado por todos los propietarios.
+Si, es posible modificar el porcentaje de un propietario mientras está el contrato vigente.
+3. Contratos:
+Si, se puede modificar la modalidad de pago durante un contrato.
+Un contrato se renueva cuando vence, aunque podríamos renovar el mismo con fecha de inicio al terminar el vigente. Esto se puede hacer con anterioridad por ejemplo cuando se da coninuidad al alquiler, y no se quiere estar un período sin contrato hasta realizar el nuevo contrato.
+Bloque 2
+4. Registro de cobros:
+Si, se permiten cobros parciales
+Si, se permiten cobros anticipados(varios meses juntos)
+Solo el admin puede modificar o eliminar un pago ya registrado
+5. La morosidad el tag se calcula automaticamente con un periodo de gracia de 3 dias luego del vencimiento de la fecha máxima.
+Bloque 3
+6. Primer usuario:
+El primer administrador se crea a traves de un script en consola, estando posicionado dentro del proyecto.
+7. Búsquedas y filtros:
+Si, nesecitamos búsquedas por apellido de propietario, inquilino, y dirección.
+Si, tambien quiero filtros por estado (alquilado/disponible), categoria(urbano/rural)
+8. Si, un informe PDF por propietario donde conste inmueble, fecha de cobro, importe, fecha de vencimiento de contrato.
+
+Antes de continuar quisiera que comitees todos los cambios y los subas al repositorio.
+
+A que te refieres con requisitos no funcionales y diseño tecnico? Al stack tecnologico?
+
+Veo que no has realizado el commit y pusheado el archivo prompts al repositorio. Quisiera que lo realices.
