@@ -51,3 +51,30 @@ Antes de continuar quisiera que comitees todos los cambios y los subas al reposi
 A que te refieres con requisitos no funcionales y diseño tecnico? Al stack tecnologico?
 
 Veo que no has realizado el commit y pusheado el archivo prompts al repositorio. Quisiera que lo realices.
+
+Sigamos con el proyecto como lo habiamos dejado.
+
+He olvidado decirte que no haremos paginado cuando tengamos muchos inmuebles sino que vamos a definir en las páginas un scroll infinito. Tambien quisiera especificar que tambien haremos test unitarios en todos los endpoints importantes del backend, y esto tambien deberá quedar documentado.
+
+Defininamos el stack tecnológico
+	Frontend → Svelte/SvelteKit ultima version
+	Backend → FastAPI ultima version
+	Base de datos → PostgreSQL
+	Autenticación → JWT + cookies
+	Refresh token → obligatorio
+	Persistencia de sesiones/tokens (duración de las sesiones típicas de redes sociales)
+	Manejo de imágenes → dejar preparado, pero sin implementar en MVP
+	API → REST
+	Proyecto bajo contenedores de Podman - vamos a usar imagenes públicas de AWS (evitar imagenes de Docker)
+
+Primero quiero que generemos el backend. Para ello vas a tener que crear el podman-compose.yml con toda la configuracion del backend. Por el momento crea un frontend con sveltkit segun la documentación pero solamente crear la aplicacion incial (sin nada configurado). Solamente vamos a hacer todo el backend. La idea es que una vez que hayamos desarrollado todo ese archivo de configuracion "podman-compose.yml up --build" me levante el backend completo y el frontend solamente un splash que diga "frontend" en el localhost:3000. El backend se levantará en localhost:8000
+
+Te parece que probemos levantando los contenedores antes de hacer el commit de todo lo que hemos realizado?
+
+1. Instalar Podman + podman-compose
+
+Listo, ya lo he instalado, podemos seguir levantando los contenedores.
+
+Ahora si, vamos a comitear todo y enviar al repositorio.
+
+Olvide de pedirte de que hagas un contro de inconsistencias de todo antes de hacer el commit. Hagamos un control de inconsistencias y en funcion de ese resultado debemos corregir las inconsistencias si hay y luego volver a comitear y pushear al repositorio.

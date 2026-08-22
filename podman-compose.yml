@@ -39,7 +39,7 @@ services:
       db:
         condition: service_healthy
     volumes:
-      - ./backend:/app
+      - ./backend/app:/app/app
       - ./uploads/images:/app/uploads/images
     networks:
       - alquiler-network

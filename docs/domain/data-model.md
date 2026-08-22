@@ -18,18 +18,33 @@ cobros       ──1:N──▶ comprobantes  (uno por propietario)
 
 ## Tablas
 
+### users
+
+```sql
+CREATE TABLE users (
+    id              VARCHAR(36) PRIMARY KEY DEFAULT uuid_generate_v4()::text,
+    email           VARCHAR(255) UNIQUE NOT NULL,
+    hashed_password VARCHAR(255) NOT NULL,
+    full_name       VARCHAR(255),
+    role            VARCHAR(50) NOT NULL DEFAULT 'empleado',
+    is_active       BOOLEAN DEFAULT true,
+    created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at      TIMESTAMPTZ
+);
+```
+
 ### propietarios
 
 ```sql
 CREATE TABLE propietarios (
-    id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    nombre        VARCHAR(200) NOT NULL,
-    documento     VARCHAR(20)  NOT NULL UNIQUE,
-    telefono      VARCHAR(30),
-    email         VARCHAR(200),
-    direccion     VARCHAR(300),
-    created_at    TIMESTAMPTZ  NOT NULL DEFAULT now(),
-    updated_at    TIMESTAMPTZ  NOT NULL DEFAULT now()
+    id            VARCHAR(36) PRIMARY KEY DEFAULT uuid_generate_v4()::text,
+    nombre        VARCHAR(255) NOT NULL,
+    dni_cuit      VARCHAR(20)  NOT NULL UNIQUE,
+    telefono      VARCHAR(50),
+    email         VARCHAR(255),
+    direccion     VARCHAR(500),
+    created_at    TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
+    updated_at    TIMESTAMPTZ
 );
 ```
 
@@ -37,14 +52,14 @@ CREATE TABLE propietarios (
 
 ```sql
 CREATE TABLE inquilinos (
-    id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    nombre        VARCHAR(200) NOT NULL,
-    documento     VARCHAR(20)  NOT NULL UNIQUE,
-    telefono      VARCHAR(30),
-    email         VARCHAR(200),
-    direccion     VARCHAR(300),
-    created_at    TIMESTAMPTZ  NOT NULL DEFAULT now(),
-    updated_at    TIMESTAMPTZ  NOT NULL DEFAULT now()
+    id            VARCHAR(36) PRIMARY KEY DEFAULT uuid_generate_v4()::text,
+    nombre        VARCHAR(255) NOT NULL,
+    dni           VARCHAR(20)  NOT NULL UNIQUE,
+    telefono      VARCHAR(50),
+    email         VARCHAR(255),
+    direccion     VARCHAR(500),
+    created_at    TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
+    updated_at    TIMESTAMPTZ
 );
 ```
 
@@ -52,13 +67,18 @@ CREATE TABLE inquilinos (
 
 ```sql
 CREATE TABLE inmuebles (
-    id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    tipo            VARCHAR(10)  NOT NULL CHECK (tipo IN ('urbano', 'rural')),
-    direccion       VARCHAR(300) NOT NULL,
+    id              VARCHAR(36) PRIMARY KEY DEFAULT uuid_generate_v4()::text,
+    direccion       VARCHAR(500) NOT NULL,
+    categoria       VARCHAR(10)  NOT NULL DEFAULT 'urbano',
+    superficie      DECIMAL(10,2),
+    habitaciones    INTEGER,
+    banos           INTEGER,
+    dormitorios     INTEGER,
+    comodidades     TEXT,
     descripcion     TEXT,
-    caracteristicas TEXT,
-    created_at      TIMESTAMPTZ  NOT NULL DEFAULT now(),
-    updated_at      TIMESTAMPTZ  NOT NULL DEFAULT now()
+    estado          VARCHAR(15)  NOT NULL DEFAULT 'disponible',
+    created_at      TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
+    updated_at      TIMESTAMPTZ
 );
 ```
 
@@ -66,20 +86,16 @@ CREATE TABLE inmuebles (
 
 ```sql
 CREATE TABLE copropiedad (
-    id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    inmueble_id     UUID           NOT NULL REFERENCES inmuebles(id) ON DELETE CASCADE,
-    propietario_id  UUID           NOT NULL REFERENCES propietarios(id),
-    participacion   DECIMAL(5,2)   NOT NULL CHECK (participacion > 0 AND participacion <= 100),
-    created_at      TIMESTAMPTZ    NOT NULL DEFAULT now(),
-
-    UNIQUE (inmueble_id, propietario_id)
+    id                      VARCHAR(36) PRIMARY KEY DEFAULT uuid_generate_v4()::text,
+    propietario_id          VARCHAR(36) NOT NULL REFERENCES propietarios(id) ON DELETE RESTRICT,
+    inmueble_id             VARCHAR(36) NOT NULL REFERENCES inmuebles(id) ON DELETE RESTRICT,
+    porcentaje_participacion DECIMAL(5,2) NOT NULL DEFAULT 100.00,
+    created_at              TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    UNIQUE(propietario_id, inmueble_id)
 );
-
-CREATE INDEX idx_copropiedad_inmueble    ON copropiedad(inmueble_id);
-CREATE INDEX idx_copropiedad_propietario ON copropiedad(propietario_id);
 ```
 
-**Constraint de participación total:** La suma de `participacion` de todos los
+**Constraint de participación total:** La suma de `porcentaje_participacion` de todos los
 registros de `copropiedad` para un mismo `inmueble_id` debe ser 100.00. Se
 valida en la capa de aplicación (no es trivial con CHECK en PostgreSQL).
 
@@ -87,26 +103,25 @@ valida en la capa de aplicación (no es trivial con CHECK en PostgreSQL).
 
 ```sql
 CREATE TABLE contratos (
-    id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    inmueble_id       UUID        NOT NULL REFERENCES inmuebles(id),
-    inquilino_id      UUID        NOT NULL REFERENCES inquilinos(id),
-    fecha_inicio      DATE        NOT NULL,
-    fecha_fin         DATE        NOT NULL,
-    fecha_max_pago    INT         NOT NULL CHECK (fecha_max_pago BETWEEN 1 AND 31),
-    frecuencia        VARCHAR(15) NOT NULL CHECK (frecuencia IN ('mensual', 'trimestral', 'anual', 'vencimiento')),
-    modalidad_pago    JSONB       NOT NULL,
-    created_at        TIMESTAMPTZ NOT NULL DEFAULT now(),
-    updated_at        TIMESTAMPTZ NOT NULL DEFAULT now(),
-
-    CHECK (fecha_fin > fecha_inicio)
+    id                  VARCHAR(36) PRIMARY KEY DEFAULT uuid_generate_v4()::text,
+    inmueble_id         VARCHAR(36) NOT NULL REFERENCES inmuebles(id) ON DELETE RESTRICT,
+    inquilino_id        VARCHAR(36) NOT NULL REFERENCES inquilinos(id) ON DELETE RESTRICT,
+    fecha_inicio        DATE        NOT NULL,
+    fecha_fin           DATE        NOT NULL,
+    fecha_maxima_pago   INTEGER     NOT NULL DEFAULT 10,
+    modalidad_pago      VARCHAR(30) NOT NULL,
+    frecuencia          VARCHAR(15) NOT NULL DEFAULT 'mensual',
+    monto_base          DECIMAL(12,2),
+    moneda              VARCHAR(3)  DEFAULT 'ARS',
+    indice              VARCHAR(50),
+    fuente_precio_agro  VARCHAR(255),
+    activo              BOOLEAN     DEFAULT true,
+    created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at          TIMESTAMPTZ
 );
-
-CREATE INDEX idx_contratos_inmueble   ON contratos(inmueble_id);
-CREATE INDEX idx_contratos_inquilino  ON contratos(inquilino_id);
 ```
 
-**Nota:** Se eliminó `propietario_id` del contrato. Los propietarios se
-obtienen del inmueble a través de `copropiedad`.
+**Nota:** Los propietarios se obtienen del inmueble a través de `copropiedad`.
 
 **Constraint de contrato activo:** Solo puede existir un contrato activo por
 inmueble (solapamiento de fechas). Se valida en la capa de aplicación.
@@ -115,43 +130,50 @@ inmueble (solapamiento de fechas). Se valida en la capa de aplicación.
 
 ```sql
 CREATE TABLE cobros (
-    id                    UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    contrato_id           UUID           NOT NULL REFERENCES contratos(id),
-    fecha_cobro           DATE           NOT NULL,
-    monto_cobrado         DECIMAL(15,2)  NOT NULL,
-    moneda_original       VARCHAR(5),
-    monto_original        DECIMAL(15,2),
-    cotizacion_aplicada   DECIMAL(15,4),
-    fuente_precio         VARCHAR(200),
-    precio_producto       DECIMAL(15,2),
-    created_at            TIMESTAMPTZ    NOT NULL DEFAULT now()
+    id                VARCHAR(36) PRIMARY KEY DEFAULT uuid_generate_v4()::text,
+    contrato_id       VARCHAR(36)    NOT NULL REFERENCES contratos(id) ON DELETE RESTRICT,
+    fecha_cobro       DATE           NOT NULL,
+    monto             DECIMAL(12,2)  NOT NULL,
+    moneda_original   VARCHAR(3),
+    monto_original    DECIMAL(12,2),
+    cotizacion        DECIMAL(10,4),
+    fuente_precio     VARCHAR(255),
+    precio_producto   DECIMAL(12,2),
+    observaciones     TEXT,
+    created_at        TIMESTAMPTZ    NOT NULL DEFAULT NOW(),
+    updated_at        TIMESTAMPTZ
 );
-
-CREATE INDEX idx_cobros_contrato ON cobros(contrato_id);
-CREATE INDEX idx_cobros_fecha    ON cobros(fecha_cobro);
 ```
-
-**Nota:** Se eliminó `comprobante_id` del cobro. Ahora la relación es
-inversa: cada comprobante referencia a su cobro.
 
 ### comprobantes
 
 ```sql
 CREATE TABLE comprobantes (
-    id                      UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    cobro_id                UUID           NOT NULL REFERENCES cobros(id),
-    propietario_id          UUID           NOT NULL REFERENCES propietarios(id),
-    tipo                    VARCHAR(15)    NOT NULL CHECK (tipo IN ('factura', 'comprobante')),
-    numero                  VARCHAR(30)    NOT NULL,
-    monto_proporcional      DECIMAL(15,2)  NOT NULL,
-    participacion_aplicada  DECIMAL(5,2)   NOT NULL,
-    descripcion             TEXT,
-    created_at              TIMESTAMPTZ    NOT NULL DEFAULT now()
+    id                        VARCHAR(36) PRIMARY KEY DEFAULT uuid_generate_v4()::text,
+    cobro_id                  VARCHAR(36) NOT NULL REFERENCES cobros(id) ON DELETE RESTRICT,
+    propietario_id            VARCHAR(36) NOT NULL REFERENCES propietarios(id) ON DELETE RESTRICT,
+    tipo                      VARCHAR(15) NOT NULL DEFAULT 'comprobante',
+    numero                    VARCHAR(50),
+    descripcion               TEXT,
+    monto_proporcional        DECIMAL(12,2) NOT NULL,
+    porcentaje_participacion  DECIMAL(5,2) NOT NULL,
+    created_at                TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+```
 
-CREATE INDEX idx_comprobantes_cobro       ON comprobantes(cobro_id);
-CREATE INDEX idx_comprobantes_propietario ON comprobantes(propietario_id);
-CREATE INDEX idx_comprobantes_tipo        ON comprobantes(tipo);
+### audit_log
+
+```sql
+CREATE TABLE audit_log (
+    id          SERIAL PRIMARY KEY,
+    user_id     VARCHAR(36) REFERENCES users(id) ON DELETE SET NULL,
+    action      VARCHAR(50) NOT NULL,
+    table_name  VARCHAR(100) NOT NULL,
+    record_id   VARCHAR(36),
+    old_values  JSONB,
+    new_values  JSONB,
+    created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
 ```
 
 ---
@@ -160,26 +182,27 @@ CREATE INDEX idx_comprobantes_tipo        ON comprobantes(tipo);
 
 | Campo | Valores permitidos |
 | ----- | ------------------ |
-| `inmuebles.tipo` | `urbano`, `rural` |
+| `users.role` | `admin`, `empleado`, `contable` |
+| `inmuebles.categoria` | `urbano`, `rural` |
+| `inmuebles.estado` | `disponible`, `alquilado` |
+| `contratos.modalidad_pago` | `pesos_indice`, `moneda_extranjera`, `producto_agropecuario` |
 | `contratos.frecuencia` | `mensual`, `trimestral`, `anual`, `vencimiento` |
-| `contratos.modalidad_pago.tipo` | `pesos_indice`, `moneda_extranjera`, `producto_agropecuario` |
-| `comprobantes.tipo` | `factura`, `comprobante` |
+| `comprobantes.tipo` | `expensas`, `honorarios`, `comprobante` |
 
 ---
 
 ## Notas de Implementación
 
-- **Estado del inmueble** no se almacena: se calcula consultando `contratos`
-  donde `fecha_inicio <= hoy <= fecha_fin`.
+- **Estado del inmueble** se almacena como columna persistente y se actualiza
+  con triggers o lógica de aplicación cuando se crea/modifica un contrato.
 - **Un solo contrato activo por inmueble** se valida en aplicación, no en
   schema, por la complejidad de constraints de solapamiento temporal en SQL.
-- **`modalidad_pago`** es JSONB para flexibilidad: cada tipo tiene su estructura
-  interna, validada en la capa de aplicación.
+- **`modalidad_pago`** usa columnas separadas (monto_base, moneda, indice, etc.)
+  para mejor queryabilidad y tipado.
 - **Copropiedad** usa tabla de unión N:M con participación porcentual. La suma
   de 100% se valida en aplicación.
 - **Comprobantes por propietario:** Un solo cobro genera N comprobantes (uno
   por propietario). La suma de `monto_proporcional` de los comprobantes de un
-  cobro debe ser igual al `monto_cobrado`. Se valida en aplicación.
-- **Unicidad de número de comprobante:** El par `(tipo, numero)` podría ser
-  UNIQUE si los números son secuenciales por tipo. Depende de la regla de
-  negocio (facturas y comprobantes tienen numeraciones independientes).
+  cobro debe ser igual al `monto`. Se valida en aplicación.
+- **Propietarios del contrato** se obtienen del inmueble vía copropiedad, no
+  directamente del contrato.

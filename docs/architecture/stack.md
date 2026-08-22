@@ -155,7 +155,7 @@ public/
 ├─────────────────┬─────────────────┬─────────────┤
 │   frontend      │    backend      │  database   │
 │   (SvelteKit)   │    (FastAPI)    │ (PostgreSQL)│
-│   :5173         │    :8000        │  :5432      │
+│   :3000         │    :8000        │  :5432      │
 └─────────────────┴─────────────────┴─────────────┘
 ```
 
@@ -170,7 +170,7 @@ POSTGRES_PASSWORD=${DB_PASSWORD}
 DATABASE_URL=postgresql+asyncpg://alquiler_user:${DB_PASSWORD}@db:5432/alquiler
 JWT_SECRET_KEY=${JWT_SECRET}
 JWT_REFRESH_SECRET_KEY=${JWT_REFRESH_SECRET}
-CORS_ORIGINS=http://localhost:5173
+CORS_ORIGINS=http://localhost:3000,http://localhost:5173
 
 # Frontend
 PUBLIC_API_URL=http://localhost:8000/api

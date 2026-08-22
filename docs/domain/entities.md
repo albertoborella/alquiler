@@ -4,15 +4,16 @@
 
 | Atributo | Tipo | Obligatorio | Descripción |
 | -------- | ---- | ----------- | ----------- |
-| `id` | UUID | sí | Identificador único |
-| `tipo` | enum | sí | `urbano` \| `rural` |
+| `id` | VARCHAR(36) | sí | Identificador único (UUID como texto) |
 | `direccion` | string | sí | Dirección o ubicación del inmueble |
+| `categoria` | enum | sí | `urbano` \| `rural` |
+| `superficie` | decimal | no | Superficie en m² |
+| `habitaciones` | int | no | Cantidad de habitaciones |
+| `banos` | int | no | Cantidad de baños |
+| `dormitorios` | int | no | Cantidad de dormitorios |
+| `comodidades` | text | no | Lista de comodidades |
 | `descripcion` | text | no | Descripción libre del inmueble |
-| `caracteristicas` | text | no | Detalles relevantes (superficie, ambientes, etc.) |
-| `estado` | enum | sí | `disponible` \| `alquilado` (calculado, no almacenado) |
-
-**Nota:** El `estado` se calcula a partir de los contratos asociados, no se
-almacena como campo persistente.
+| `estado` | enum | sí | `disponible` \| `alquilado` (almacenado, se actualiza con triggers) |
 
 ---
 
@@ -20,9 +21,9 @@ almacena como campo persistente.
 
 | Atributo | Tipo | Obligatorio | Descripción |
 | -------- | ---- | ----------- | ----------- |
-| `id` | UUID | sí | Identificador único |
+| `id` | VARCHAR(36) | sí | Identificador único (UUID como texto) |
 | `nombre` | string | sí | Nombre completo o razón social |
-| `documento` | string | sí | DNI, CUIT o equivalente |
+| `dni_cuit` | string | sí | DNI, CUIT o equivalente |
 | `telefono` | string | no | Teléfono de contacto |
 | `email` | string | no | Correo electrónico de contacto |
 | `direccion` | string | no | Dirección personal |
@@ -33,12 +34,12 @@ almacena como campo persistente.
 
 | Atributo | Tipo | Obligatorio | Descripción |
 | -------- | ---- | ----------- | ----------- |
-| `id` | UUID | sí | Identificador único |
+| `id` | VARCHAR(36) | sí | Identificador único (UUID como texto) |
 | `inmueble_id` | FK → Inmueble | sí | Inmueble |
 | `propietario_id` | FK → Propietario | sí | Copropietario |
-| `participacion` | decimal(5,2) | sí | Porcentaje de participación (ej: 50.00) |
+| `porcentaje_participacion` | decimal(5,2) | sí | Porcentaje de participación (ej: 50.00) |
 
-**Regla de integridad:** La suma de `participacion` de todos los propietarios
+**Regla de integridad:** La suma de `porcentaje_participacion` de todos los propietarios
 de un inmueble debe ser exactamente 100.00. Se valida en la capa de aplicación.
 
 **Restricción UNIQUE:** Un propietario no puede tener dos registros de
@@ -50,9 +51,9 @@ participación en el mismo inmueble.
 
 | Atributo | Tipo | Obligatorio | Descripción |
 | -------- | ---- | ----------- | ----------- |
-| `id` | UUID | sí | Identificador único |
+| `id` | VARCHAR(36) | sí | Identificador único (UUID como texto) |
 | `nombre` | string | sí | Nombre completo |
-| `documento` | string | sí | DNI o equivalente |
+| `dni` | string | sí | DNI o equivalente |
 | `telefono` | string | no | Teléfono de contacto |
 | `email` | string | no | Correo electrónico de contacto |
 | `direccion` | string | no | Dirección personal |
@@ -63,55 +64,21 @@ participación en el mismo inmueble.
 
 | Atributo | Tipo | Obligatorio | Descripción |
 | -------- | ---- | ----------- | ----------- |
-| `id` | UUID | sí | Identificador único |
+| `id` | VARCHAR(36) | sí | Identificador único (UUID como texto) |
 | `inmueble_id` | FK → Inmueble | sí | Inmueble alquilado |
 | `inquilino_id` | FK → Inquilino | sí | Quién alquila |
 | `fecha_inicio` | date | sí | Fecha de inicio del contrato |
 | `fecha_fin` | date | sí | Fecha de finalización del contrato |
-| `fecha_max_pago` | int | sí | Día del mes como límite de pago (ej: 10) |
+| `fecha_maxima_pago` | int | sí | Día del mes como límite de pago (ej: 10) |
+| `modalidad_pago` | enum | sí | `pesos_indice` \| `moneda_extranjera` \| `producto_agropecuario` |
 | `frecuencia` | enum | sí | `mensual` \| `trimestral` \| `anual` \| `vencimiento` |
-| `modalidad_pago` | JSON | sí | Ver ModalidadPago abajo |
+| `monto_base` | decimal | no | Monto base del alquiler |
+| `moneda` | string | no | Moneda (default: ARS) |
+| `indice` | string | no | Índice de actualización (ej: ICL, IPC) |
+| `fuente_precio_agro` | string | no | Fuente del precio para pagos agropecuarios |
+| `activo` | boolean | sí | Si el contrato está vigente |
 
-**Nota:** El contrato NO referencia directamente a propietarios. Los
-propietarios se obtienen del inmueble a través de la tabla `copropiedad`.
-
----
-
-## ModalidadPago (JSON embebido en Contrato)
-
-El tipo de modalidad se identifica por el campo `tipo`:
-
-### Tipo A — Pesos con Índice
-
-```json
-{
-  "tipo": "pesos_indice",
-  "monto_base": 150000,
-  "indice": "ICL"
-}
-```
-
-### Tipo B — Moneda Extranjera
-
-```json
-{
-  "tipo": "moneda_extranjera",
-  "moneda": "USD",
-  "monto_original": 500
-}
-```
-
-### Tipo C — Producto Agropecuario
-
-```json
-{
-  "tipo": "producto_agropecuario",
-  "producto": "soja",
-  "cantidad": 200,
-  "unidad": "kg/ha",
-  "fuente_precio": "Bolsa de Cereales de Rosario"
-}
-```
+**Nota:** El contrato obtiene los propietarios del inmueble a través de la tabla `copropiedad`.
 
 ---
 
@@ -119,15 +86,16 @@ El tipo de modalidad se identifica por el campo `tipo`:
 
 | Atributo | Tipo | Obligatorio | Descripción |
 | -------- | ---- | ----------- | ----------- |
-| `id` | UUID | sí | Identificador único |
+| `id` | VARCHAR(36) | sí | Identificador único (UUID como texto) |
 | `contrato_id` | FK → Contrato | sí | Contrato al que pertenece |
 | `fecha_cobro` | date | sí | Fecha en que se efectuó el cobro |
-| `monto_cobrado` | decimal | sí | Monto total cobrado en pesos |
+| `monto` | decimal | sí | Monto total cobrado en pesos |
 | `moneda_original` | string | no | Divisa original si fue pago en moneda extranjera |
 | `monto_original` | decimal | no | Monto en la moneda original |
-| `cotizacion_aplicada` | decimal | no | Tipo de cambio utilizado |
+| `cotizacion` | decimal | no | Tipo de cambio utilizado |
 | `fuente_precio` | string | no | Fuente del precio para pagos agropecuarios |
 | `precio_producto` | decimal | no | Precio unitario del producto al momento del cobro |
+| `observaciones` | text | no | Notas adicionales |
 
 **Nota:** Un cobro genera **N comprobantes** (uno por propietario del inmueble).
 
@@ -139,22 +107,23 @@ Documento que respalda un cobro para un propietario específico.
 
 | Atributo | Tipo | Obligatorio | Descripción |
 | -------- | ---- | ----------- | ----------- |
-| `id` | UUID | sí | Identificador único |
+| `id` | VARCHAR(36) | sí | Identificador único (UUID como texto) |
 | `cobro_id` | FK → Cobro | sí | Cobro al que respalda |
 | `propietario_id` | FK → Propietario | sí | Propietario al que se factura/comproba |
-| `tipo` | enum | sí | `factura` \| `comprobante` |
-| `numero` | string | sí | Número del documento (ej: A-0001-00012345 o 00001234) |
+| `tipo` | enum | sí | `expensas` \| `honorarios` \| `comprobante` |
+| `numero` | string | no | Número del documento (ej: A-0001-00012345 o 00001234) |
+| `descripcion` | text | no | Concepto o descripción |
 | `monto_proporcional` | decimal | sí | Monto que le corresponde según su participación |
-| `participacion_aplicada` | decimal | sí | Porcentaje usado para el cálculo |
-| `descripcion` | string | no | Concepto o descripción |
+| `porcentaje_participacion` | decimal | sí | Porcentaje usado para el cálculo |
 | `created_at` | timestamp | sí | Fecha de registro |
 
 **Regla de negocio:** La suma de `monto_proporcional` de todos los comprobantes
-de un mismo cobro debe ser igual al `monto_cobrado` del cobro.
+de un mismo cobro debe ser igual al `monto` del cobro.
 
 **Tipos de comprobante:**
 
 | Tipo | Ejemplo de número | Uso |
 | ---- | ----------------- | --- |
-| `factura` | A-0001-00012345 | Factura fiscal (A, B, C, etc.) |
-| `comprobante` | 00001234 | Comprobante secuencial sin valor fiscal |
+| `expensas` | A-0001-00012345 | Factura de expensas |
+| `honorarios` | B-0001-00012345 | Factura de honorarios |
+| `comprobante` | 00001234 | Comprobante secuencial |

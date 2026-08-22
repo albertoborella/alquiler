@@ -8,6 +8,7 @@ CREATE TYPE inmueble_categoria AS ENUM ('urbano', 'rural');
 CREATE TYPE inmueble_estado AS ENUM ('alquilado', 'disponible');
 CREATE TYPE contrato_frecuencia AS ENUM ('mensual', 'trimestral', 'anual', 'vencimiento');
 CREATE TYPE modalidad_pago AS ENUM ('pesos_indice', 'moneda_extranjera', 'producto_agropecuario');
+CREATE TYPE comprobante_tipo AS ENUM ('expensas', 'honorarios', 'comprobante');
 
 -- Users table
 CREATE TABLE users (
@@ -61,8 +62,8 @@ CREATE TABLE inmuebles (
     updated_at TIMESTAMP WITH TIME ZONE
 );
 
--- Propietarios-Inmuebles (Copropiedad) table
-CREATE TABLE propietarios_inmuebles (
+-- Copropiedad table (Propietarios-Inmuebles)
+CREATE TABLE copropiedad (
     id VARCHAR(36) PRIMARY KEY DEFAULT uuid_generate_v4()::text,
     propietario_id VARCHAR(36) NOT NULL REFERENCES propietarios(id) ON DELETE RESTRICT,
     inmueble_id VARCHAR(36) NOT NULL REFERENCES inmuebles(id) ON DELETE RESTRICT,
@@ -90,16 +91,6 @@ CREATE TABLE contratos (
     updated_at TIMESTAMP WITH TIME ZONE
 );
 
--- Contratos-Propietarios table
-CREATE TABLE contratos_propietarios (
-    id VARCHAR(36) PRIMARY KEY DEFAULT uuid_generate_v4()::text,
-    contrato_id VARCHAR(36) NOT NULL REFERENCES contratos(id) ON DELETE RESTRICT,
-    propietario_id VARCHAR(36) NOT NULL REFERENCES propietarios(id) ON DELETE RESTRICT,
-    porcentaje_participacion DECIMAL(5,2) NOT NULL DEFAULT 100.00,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    UNIQUE(contrato_id, propietario_id)
-);
-
 -- Cobros table
 CREATE TABLE cobros (
     id VARCHAR(36) PRIMARY KEY DEFAULT uuid_generate_v4()::text,
@@ -109,6 +100,8 @@ CREATE TABLE cobros (
     moneda_original VARCHAR(3),
     monto_original DECIMAL(12,2),
     cotizacion DECIMAL(10,4),
+    fuente_precio VARCHAR(255),
+    precio_producto DECIMAL(12,2),
     observaciones TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE
@@ -119,6 +112,9 @@ CREATE TABLE comprobantes (
     id VARCHAR(36) PRIMARY KEY DEFAULT uuid_generate_v4()::text,
     cobro_id VARCHAR(36) NOT NULL REFERENCES cobros(id) ON DELETE RESTRICT,
     propietario_id VARCHAR(36) NOT NULL REFERENCES propietarios(id) ON DELETE RESTRICT,
+    tipo comprobante_tipo NOT NULL DEFAULT 'comprobante',
+    numero VARCHAR(50),
+    descripcion TEXT,
     monto_proporcional DECIMAL(12,2) NOT NULL,
     porcentaje_participacion DECIMAL(5,2) NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
@@ -144,6 +140,8 @@ CREATE INDEX idx_inquilinos_dni ON inquilinos(dni);
 CREATE INDEX idx_inmuebles_estado ON inmuebles(estado);
 CREATE INDEX idx_inmuebles_categoria ON inmuebles(categoria);
 CREATE INDEX idx_inmuebles_direccion ON inmuebles(direccion);
+CREATE INDEX idx_copropiedad_propietario ON copropiedad(propietario_id);
+CREATE INDEX idx_copropiedad_inmueble ON copropiedad(inmueble_id);
 CREATE INDEX idx_contratos_inmueble ON contratos(inmueble_id);
 CREATE INDEX idx_contratos_inquilino ON contratos(inquilino_id);
 CREATE INDEX idx_contratos_fechas ON contratos(fecha_inicio, fecha_fin);
