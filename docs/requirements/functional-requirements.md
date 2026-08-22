@@ -122,6 +122,15 @@
 
 ---
 
+## Navegacion y UX
+
+### FR-21: Scroll Infinito
+- Todos los listados de inmuebles, propietarios, inquilinos y contratos utilizan **scroll infinito** en lugar de paginado.
+- Los datos se cargan progresivamente a medida que el usuario hace scroll hacia abajo.
+- Se muestra un indicador de carga mientras se obtienen nuevos registros.
+
+---
+
 ## Exportacion
 
 ### FR-19: Informe PDF por Propietario
@@ -133,3 +142,16 @@
 
 ### FR-20: Script de Inicializacion
 - Script en consola para crear el primer Administrador del sistema (segun BR-09).
+
+---
+
+## Testing
+
+### FR-22: Test Unitarios del Backend
+- Implementar **test unitarios** para todos los endpoints importantes del backend.
+- Los tests deben cubrir:
+  - CRUD de inmuebles, propietarios, inquilinos, contratos y cobros.
+  - Endpoints de autenticacion y autorizacion.
+  - Endpoints de busqueda y filtros.
+  - Logica de negocio critica (calculo de morosidad, generacion de comprobantes).
+- Cada test debe verificar tanto el caso exitoso como los casos de error.

@@ -8,6 +8,7 @@ comunicación entre servicios, seguridad y despliegue.
 
 | Archivo | Qué contiene |
 | ------- | ------------ |
+| `stack.md` | Stack tecnológico y decisiones técnicas |
 | `00-architecture.md` | Arquitectura general: componentes y comunicación. |
 | `01-api-design.md` | Diseño de APIs y contratos entre servicios. |
 | `02-security.md` | Modelo de seguridad: autenticación, autorización, datos. |

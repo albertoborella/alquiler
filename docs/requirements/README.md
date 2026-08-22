@@ -10,6 +10,7 @@ restricciones y comportamientos esperados.
 | ------- | ------------ |
 | `business-rules.md` | Reglas que gobiernan el comportamiento del sistema. |
 | `functional-requirements.md` | Funcionalidades que debe ofrecer la aplicación. |
+| `testing-requirements.md` | Requisitos de testing y cobertura de tests. |
 | `non-functional-requirements.md` | Calidad, rendimiento, seguridad, restricciones. |
 | `authentication.md` | Especificación de autenticación y autorización. |
 | `user-stories.md` | Necesidades expresadas desde la perspectiva del usuario. |

@@ -1,0 +1,67 @@
+version: '3.8'
+
+services:
+  db:
+    image: public.ecr.aws/docker/library/postgres:15-alpine
+    container_name: alquiler-db
+    environment:
+      POSTGRES_DB: alquiler
+      POSTGRES_USER: alquiler_user
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-alquiler_dev_2024}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U alquiler_user -d alquiler"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - alquiler-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: localhost/alquiler_backend:latest
+    container_name: alquiler-backend
+    environment:
+      DATABASE_URL: postgresql+asyncpg://alquiler_user:${DB_PASSWORD:-alquiler_dev_2024}@db:5432/alquiler
+      JWT_SECRET_KEY: ${JWT_SECRET:-super-secret-jwt-key-change-in-production}
+      JWT_REFRESH_SECRET_KEY: ${JWT_REFRESH_SECRET:-super-secret-refresh-key-change-in-production}
+      CORS_ORIGINS: http://localhost:3000,http://localhost:5173
+      ENVIRONMENT: development
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app
+      - ./uploads/images:/app/uploads/images
+    networks:
+      - alquiler-network
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    image: localhost/alquiler_frontend:latest
+    container_name: alquiler-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      PUBLIC_API_URL: http://localhost:8000/api
+    networks:
+      - alquiler-network
+    command: npm run dev -- --host 0.0.0.0 --port 3000
+
+volumes:
+  postgres_data:
+
+networks:
+  alquiler-network:
+    driver: bridge

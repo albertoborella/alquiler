@@ -28,6 +28,12 @@ El sistema es de uso exclusivo del **personal de la inmobiliaria** (usuarios cer
 
 ---
 
+## Patrón de Navegación: Scroll Infinito
+
+Todos los listados del sistema (inmuebles, propietarios, inquilinos, contratos) utilizan **scroll infinito** en lugar de paginado tradicional. Los datos se cargan progresivamente a medida que el usuario hace scroll hacia abajo.
+
+---
+
 ## Panel de Inmueble
 
 Al seleccionar un inmueble, se muestra:
