@@ -1,23 +1,22 @@
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
 from typing import Optional, List
+from datetime import datetime
 import uuid
-
-from app.models.user import users_table
-from app.schemas.user import UserCreate, UserUpdate
+from sqlmodel import select
+from sqlalchemy.ext.asyncio import AsyncSession
+from app.models.user import User, UserCreate, UserUpdate
 from app.core.security import get_password_hash
 
 
-async def get_user(db: AsyncSession, user_id: str) -> Optional[dict]:
+async def get_user(db: AsyncSession, user_id: str) -> Optional[User]:
     """Get a user by ID."""
-    result = await db.execute(select(users_table).where(users_table.c.id == user_id))
-    return result.scalar_one_or_none()
+    return await db.get(User, user_id)
 
 
-async def get_user_by_email(db: AsyncSession, email: str) -> Optional[dict]:
+async def get_user_by_email(db: AsyncSession, email: str) -> Optional[User]:
     """Get a user by email."""
-    result = await db.execute(select(users_table).where(users_table.c.email == email))
-    return result.scalar_one_or_none()
+    statement = select(User).where(User.email == email)
+    result = await db.execute(statement)
+    return result.scalars().first()
 
 
 async def get_users(
@@ -25,72 +24,70 @@ async def get_users(
     skip: int = 0,
     limit: int = 100,
     is_active: Optional[bool] = None
-) -> List[dict]:
+) -> List[User]:
     """Get multiple users."""
-    query = select(users_table)
+    statement = select(User)
     if is_active is not None:
-        query = query.where(users_table.c.is_active == is_active)
-    query = query.offset(skip).limit(limit)
-    result = await db.execute(query)
-    return result.scalars().all()
+        statement = statement.where(User.is_active == is_active)
+    statement = statement.offset(skip).limit(limit)
+    result = await db.execute(statement)
+    return list(result.scalars().all())
 
 
-async def create_user(db: AsyncSession, user_in: UserCreate) -> dict:
+async def create_user(db: AsyncSession, user_in: UserCreate) -> User:
     """Create a new user."""
     user_id = str(uuid.uuid4())
     hashed_password = get_password_hash(user_in.password)
     
-    user_data = {
-        "id": user_id,
-        "email": user_in.email,
-        "hashed_password": hashed_password,
-        "full_name": user_in.full_name,
-        "role": user_in.role,
-        "is_active": True,
-    }
+    user = User(
+        id=user_id,
+        email=user_in.email,
+        hashed_password=hashed_password,
+        full_name=user_in.full_name,
+        role=user_in.role,
+        is_active=True,
+        created_at=datetime.utcnow(),
+    )
     
-    await db.execute(users_table.insert().values(**user_data))
+    db.add(user)
     await db.commit()
-    
-    return await get_user(db, user_id)
+    await db.refresh(user)
+    return user
 
 
-async def update_user(
-    db: AsyncSession,
-    user_id: str,
-    user_in: UserUpdate
-) -> Optional[dict]:
+async def update_user(db: AsyncSession, user_id: str, user_in: UserUpdate) -> Optional[User]:
     """Update a user."""
+    user = await db.get(User, user_id)
+    if not user:
+        return None
+    
     update_data = user_in.model_dump(exclude_unset=True)
     
     if "password" in update_data:
         update_data["hashed_password"] = get_password_hash(update_data.pop("password"))
     
-    if update_data:
-        await db.execute(
-            users_table.update()
-            .where(users_table.c.id == user_id)
-            .values(**update_data)
-        )
-        await db.commit()
+    for key, value in update_data.items():
+        setattr(user, key, value)
     
-    return await get_user(db, user_id)
+    user.updated_at = datetime.utcnow()
+    db.add(user)
+    await db.commit()
+    await db.refresh(user)
+    return user
 
 
 async def delete_user(db: AsyncSession, user_id: str) -> bool:
     """Delete a user."""
-    result = await db.execute(
-        users_table.delete().where(users_table.c.id == user_id)
-    )
+    user = await db.get(User, user_id)
+    if not user:
+        return False
+    
+    await db.delete(user)
     await db.commit()
-    return result.rowcount > 0
+    return True
 
 
-async def authenticate_user(
-    db: AsyncSession,
-    email: str,
-    password: str
-) -> Optional[dict]:
+async def authenticate_user(db: AsyncSession, email: str, password: str) -> Optional[User]:
     """Authenticate a user."""
     user = await get_user_by_email(db, email)
     if not user:
