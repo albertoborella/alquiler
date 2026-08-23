@@ -1,6 +1,10 @@
-from typing import Optional, List
+from typing import Optional, List, TYPE_CHECKING
 from datetime import datetime, date
 from sqlmodel import SQLModel, Field, Relationship
+
+if TYPE_CHECKING:
+    from app.models.contrato import Contrato
+    from app.models.comprobante import Comprobante
 
 
 class CobroBase(SQLModel):
