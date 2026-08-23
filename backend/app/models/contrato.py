@@ -1,6 +1,11 @@
-from typing import Optional, List
+from typing import Optional, List, TYPE_CHECKING
 from datetime import datetime, date
 from sqlmodel import SQLModel, Field, Relationship
+
+if TYPE_CHECKING:
+    from app.models.inmueble import Inmueble
+    from app.models.inquilino import Inquilino
+    from app.models.cobro import Cobro
 
 
 class ContratoBase(SQLModel):

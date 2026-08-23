@@ -1,6 +1,10 @@
-from typing import Optional
+from typing import Optional, TYPE_CHECKING
 from datetime import datetime
 from sqlmodel import SQLModel, Field, Relationship
+
+if TYPE_CHECKING:
+    from app.models.cobro import Cobro
+    from app.models.propietario import Propietario
 
 
 class ComprobanteBase(SQLModel):

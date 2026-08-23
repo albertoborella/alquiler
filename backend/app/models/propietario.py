@@ -1,7 +1,10 @@
-from typing import Optional, List
+from typing import Optional, List, TYPE_CHECKING
 from datetime import datetime
 from sqlmodel import SQLModel, Field, Relationship
 from app.models.copropiedad import Copropiedad
+
+if TYPE_CHECKING:
+    from app.models.inmueble import Inmueble
 
 
 class PropietarioBase(SQLModel):
