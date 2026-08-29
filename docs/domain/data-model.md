@@ -114,6 +114,10 @@ CREATE TABLE contratos (
     monto_base          DECIMAL(12,2),
     moneda              VARCHAR(3)  DEFAULT 'ARS',
     indice              VARCHAR(50),
+    periodo_indexacion  VARCHAR(50),
+    tipo_producto       VARCHAR(100),
+    kilos               DECIMAL(12,2),
+    precio_kilo         DECIMAL(12,2),
     fuente_precio_agro  VARCHAR(255),
     activo              BOOLEAN     DEFAULT true,
     created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -187,6 +191,8 @@ CREATE TABLE audit_log (
 | `inmuebles.estado` | `disponible`, `alquilado` |
 | `contratos.modalidad_pago` | `pesos_indice`, `moneda_extranjera`, `producto_agropecuario` |
 | `contratos.frecuencia` | `mensual`, `trimestral`, `anual`, `vencimiento` |
+| `contratos.periodo_indexacion` | `mensual`, `trimestral`, `anual` |
+| `contratos.tipo_producto` | `soja`, `trigo`, `maiz`, `girasol`, `otro` |
 | `comprobantes.tipo` | `expensas`, `honorarios`, `comprobante` |
 
 ---

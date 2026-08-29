@@ -62,23 +62,31 @@ participación en el mismo inmueble.
 
 ## Contrato
 
-| Atributo | Tipo | Obligatorio | Descripción |
+| Atributo | Tipo | Obligatorio | Descripcion |
 | -------- | ---- | ----------- | ----------- |
-| `id` | VARCHAR(36) | sí | Identificador único (UUID como texto) |
-| `inmueble_id` | FK → Inmueble | sí | Inmueble alquilado |
-| `inquilino_id` | FK → Inquilino | sí | Quién alquila |
-| `fecha_inicio` | date | sí | Fecha de inicio del contrato |
-| `fecha_fin` | date | sí | Fecha de finalización del contrato |
-| `fecha_maxima_pago` | int | sí | Día del mes como límite de pago (ej: 10) |
-| `modalidad_pago` | enum | sí | `pesos_indice` \| `moneda_extranjera` \| `producto_agropecuario` |
-| `frecuencia` | enum | sí | `mensual` \| `trimestral` \| `anual` \| `vencimiento` |
-| `monto_base` | decimal | no | Monto base del alquiler |
+| `id` | VARCHAR(36) | si | Identificador unico (UUID como texto) |
+| `inmueble_id` | FK -> Inmueble | si | Inmueble alquilado |
+| `inquilino_id` | FK -> Inquilino | si | Quien alquila |
+| `fecha_inicio` | date | si | Fecha de inicio del contrato |
+| `fecha_fin` | date | si | Fecha de finalizacion del contrato |
+| `fecha_maxima_pago` | int | si | Dia del mes como limite de pago (ej: 10) |
+| `modalidad_pago` | enum | si | `pesos_indice` \| `moneda_extranjera` \| `producto_agropecuario` |
+| `frecuencia` | enum | si | `mensual` \| `trimestral` \| `anual` \| `vencimiento` |
+| `monto_base` | decimal | no | Monto base del alquiler (urbano) |
 | `moneda` | string | no | Moneda (default: ARS) |
-| `indice` | string | no | Índice de actualización (ej: ICL, IPC) |
+| `indice` | string | no | Indice de actualizacion (ej: ICL, IPC) |
+| `periodo_indexacion` | string | no | Periodo de actualizacion (ej: mensual, trimestral, anual) |
+| `tipo_producto` | string | no | Tipo de producto agropecuario (rural) |
+| `kilos` | decimal | no | Cantidad de kilos del producto (rural) |
+| `precio_kilo` | decimal | no | Precio unitario por kilo (rural) |
 | `fuente_precio_agro` | string | no | Fuente del precio para pagos agropecuarios |
-| `activo` | boolean | sí | Si el contrato está vigente |
+| `activo` | boolean | si | Si el contrato esta vigente |
 
-**Nota:** El contrato obtiene los propietarios del inmueble a través de la tabla `copropiedad`.
+**Nota:** El contrato obtiene los propietarios del inmueble a traves de la tabla `copropiedad`.
+
+**Modalidades de pago segun categoria:**
+- **Urbano** (`pesos_indice` / `moneda_extranjera`): usa `monto_base`, `moneda`, `indice`, `periodo_indexacion`.
+- **Rural** (`producto_agropecuario`): usa `tipo_producto`, `kilos`, `precio_kilo`.
 
 ---
 

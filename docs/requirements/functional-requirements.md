@@ -23,6 +23,13 @@
 | Eliminar cobros | Si | No | No |
 | Modificar cobros | Si | No | No |
 | Gestionar usuarios | Si | No | No |
+| Gestionar inquilinos | Si | No | No |
+| Ver propietarios desde tabla inmuebles | Si | No | No |
+| Registrar cobro desde tabla inmuebles | Si | No | No |
+| Ver historial de cobros desde tabla | Si | No | No |
+| Editar contrato desde tabla inmuebles | Si | No | No |
+| Generar contrato desde tabla inmuebles | Si | No | No |
+| Crear inmueble desde tabla inmuebles | Si | No | No |
 
 ---
 
@@ -39,6 +46,48 @@
   - Datos completos (direccion, superficie, habitaciones, banos, dormitorios, comodidades).
   - Tag de estado (alquilado/disponible).
   - Si esta alquilado: boton de cobros, contratos, historico de cobranzas, fecha de caducidad.
+
+### FR-05a: Acciones de Administrador en Tabla de Inmuebles
+- La tabla de inmuebles muestra **iconos de accion** exclusivos para el rol **Administrador**:
+  - **Ver propietarios**: muestra modal con lista de propietarios y su porcentaje de participacion.
+  - **Registrar cobro**: abre modal para crear un cobro (`POST /api/cobros`) vinculado al contrato del inmueble. Pre-carga fecha de hoy y monto base del contrato.
+  - **Historial de cobros**: muestra modal con listado de cobros anteriores del contrato (`GET /api/cobros/contrato/{id}`).
+  - **Editar contrato**: enlace a formulario de edicion del contrato vigente.
+  - **Editar inmueble**: enlace a formulario de edicion del inmueble.
+  - **Eliminar inmueble**: icono con confirmacion antes de eliminar.
+- El usuario **Empleado** solo ve la tabla sin iconos de accion (solo lectura).
+
+### FR-05b: Generar Contrato desde Tabla de Inmuebles
+- Cuando un inmueble esta en estado **disponible**, se muestra un icono **"Generar Contrato"** en la fila.
+- Al hacer click, se abre un modal con los siguientes campos:
+
+#### Campos comunes (todos los inmuebles):
+| Campo | Tipo | Obligatorio | Descripcion |
+|-------|------|-------------|-------------|
+| Fecha de inicio | date | si | Fecha de inicio del contrato |
+| Fecha final | date | si | Fecha de finalizacion del contrato |
+
+#### Campos para inmuebles urbanos (modalidad peso/indice o moneda extranjera):
+| Campo | Tipo | Obligatorio | Descripcion |
+|-------|------|-------------|-------------|
+| Importe mensual de inicio | decimal | no | Monto base del alquiler en la moneda indicada |
+| Moneda | select | no | Moneda del importe (ARS por defecto, USD) |
+| Periodo de indexacion | select | no | Periodo de actualizacion del importe (ej: mensual, trimestral, anual) |
+| Indice de indexacion | select | no | Indice utilizado para actualizacion (ej: ICL, IPC) |
+
+#### Campos para inmuebles rurales (modalidad producto agropecuario):
+| Campo | Tipo | Obligatorio | Descripcion |
+|-------|------|-------------|-------------|
+| Tipo de producto | select | si | Producto agropecuario (ej: soja, trigo, maiz) |
+| Kilos | decimal | si | Cantidad de kilos del producto |
+| Precio por kilo | decimal | si | Precio unitario del producto |
+
+- La seleccion de campos se realiza automaticamente segun la **categoria** del inmueble (urbano/rural).
+- Al confirmar, se crea un contrato con `modalidad_pago` segun corresponda:
+  - **Urbano**: `pesos_indice` o `moneda_extranjera` (segun moneda elegida)
+  - **Rural**: `producto_agropecuario`
+- El inmueble cambia automaticamente de estado a **alquilado** al crearse el contrato.
+- Solo el **Administrador** puede generar contratos desde la tabla.
 
 ---
 
@@ -60,10 +109,14 @@
 ## Gestion de Inquilinos
 
 ### FR-08: CRUD de Inquilinos
-- **Alta**: registrar inquilino con nombre, DNI, contacto.
+- **Alta**: registrar inquilino con nombre, DNI, telefono, email, direccion.
 - **Baja**: eliminar inquilino (solo si cumple BR-01).
 - **Edicion**: modificar datos del inquilino.
-- **Listado**: ver todos los inquilinos.
+- **Listado**: tabla con todos los inquilinos (nombre, DNI, telefono, email).
+- Acceso desde el **Sidebar** en la seccion "Inquilinos".
+- Solo el **Administrador** puede crear, editar y eliminar inquilinos.
+- El usuario **Empleado** solo ve la tabla (solo lectura).
+- El inquilino seleccionado se vincula al contrato al generar uno desde la tabla de inmuebles.
 
 ---
 
@@ -83,9 +136,10 @@
 ## Gestion de Cobros
 
 ### FR-11: Registro de Cobros
-- Registrar cobro con: fecha de cobro, monto, moneda original (si aplica), cotizacion (si aplica).
+- Registrar cobro con: fecha de cobro, monto, moneda original (si aplica), cotizacion (si aplica), observaciones.
 - Asociar cobro a un contrato especifico.
 - Soportar cobros parciales y anticipados (segun BR-07).
+- **Registro rapido desde tabla de inmuebles** (admin): icono "Cobrar" en la fila del inmueble abre modal pre-cargado con fecha actual y monto base del contrato.
 
 ### FR-12: Comprobantes
 - Al registrar un cobro, generar **un comprobante por propietario** con monto proporcional a su participacion.
@@ -101,7 +155,7 @@
 ### FR-14: Tabla Principal de Inmuebles
 - Mostrar tabla con todos los inmuebles ordenados por propietario.
 - Tag de estado con color distintivo (alquilado/no alquilado).
-- Tag de **morosidad** si aplica (segun BR-08).
+- Columna de morosidad con formato **Sí / No** (segun BR-08).
 
 ### FR-15: Consulta por Propietario
 - Ver todos los inmuebles de un propietario especifico.
@@ -129,6 +183,12 @@
 - Los datos se cargan progresivamente a medida que el usuario hace scroll hacia abajo.
 - Se muestra un indicador de carga mientras se obtienen nuevos registros.
 
+### FR-23: Modo Claro / Oscuro
+- El sistema ofrece un **toggle de tema** (sol/luna) en la barra de navegacion.
+- El tema seleccionado se persiste en `localStorage` y se aplica al recargar.
+- Si no hay tema guardado, respeta la preferencia del sistema operativo (`prefers-color-scheme`).
+- Todos los componentes (tablas, modales, sidebar, navbar, formularios) soportan ambos modos.
+
 ---
 
 ## Exportacion
@@ -142,6 +202,16 @@
 
 ### FR-20: Script de Inicializacion
 - Script en consola para crear el primer Administrador del sistema (segun BR-09).
+
+---
+
+## Diseno Responsivo
+
+### FR-24: Layout Responsivo
+- El sidebar se oculta en pantallas chicas (`< md`) y se muestra via hamburger menu.
+- Las tablas usan scroll horizontal en mobile con columnas ocultas progresivamente (Inquilino, Monto, Vencimiento se ocultan en pantallas chicas).
+- Los filtros y botones se apilan en mobile.
+- Sidebar mas angosto (`w-44` / 11rem) para maximizar espacio de contenido.
 
 ---
 

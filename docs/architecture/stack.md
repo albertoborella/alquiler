@@ -16,9 +16,11 @@
 
 - **Framework**: SvelteKit (SSR + SPA)
 - **Lenguaje**: TypeScript
-- **Estilos**: Tailwind CSS
+- **Estilos**: Tailwind CSS (darkMode: class)
 - **Estado**: Svelte stores
 - **Navegación**: Scroll infinito en todos los listados
+- **Tema**: Modo claro/oscuro con persistencia en localStorage
+- **Responsive**: Sidebar oculto en mobile (hamburger), tablas con scroll horizontal, columnas progresivas
 
 ### Paquetes principales
 - `@sveltejs/kit` - Framework principal

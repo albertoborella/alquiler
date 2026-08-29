@@ -23,12 +23,15 @@ async def get_users(
     db: AsyncSession,
     skip: int = 0,
     limit: int = 100,
-    is_active: Optional[bool] = None
+    is_active: Optional[bool] = None,
+    role: Optional[str] = None
 ) -> List[User]:
     """Get multiple users."""
     statement = select(User)
     if is_active is not None:
         statement = statement.where(User.is_active == is_active)
+    if role is not None:
+        statement = statement.where(User.role == role)
     statement = statement.offset(skip).limit(limit)
     result = await db.execute(statement)
     return list(result.scalars().all())

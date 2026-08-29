@@ -60,20 +60,25 @@ def verify_token(token: str, secret_key: str) -> dict:
 
 def set_auth_cookies(response: Response, access_token: str, refresh_token: str) -> None:
     """Set authentication cookies."""
+    from app.core.config import settings
+    is_production = settings.ENVIRONMENT == "production"
+
+    # In development, access_token is NOT httponly so Swagger UI can read it
+    # In production, both are httponly for security
     response.set_cookie(
         key="access_token",
         value=access_token,
-        httponly=True,
-        secure=True,
-        samesite="strict",
+        httponly=is_production,
+        secure=is_production,
+        samesite="lax",
         max_age=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60
     )
     response.set_cookie(
         key="refresh_token",
         value=refresh_token,
-        httponly=True,
-        secure=True,
-        samesite="strict",
+        httponly=True,  # Always httponly — refresh token is sensitive
+        secure=is_production,
+        samesite="lax",
         max_age=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60
     )
 

@@ -1,46 +1,19 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from fastapi.security import APIKeyHeader
 from pathlib import Path
 from contextlib import asynccontextmanager
-import uuid
-from datetime import datetime
 
 from app.core.config import settings
 from app.api.v1 import api_router
-from app.db.session import AsyncSessionLocal
-from app.models.user import User
-from app.core.security import get_password_hash
-
-
-async def seed_admin_user():
-    """Create default admin user if none exists."""
-    async with AsyncSessionLocal() as db:
-        from sqlmodel import select
-        result = await db.execute(select(User).where(User.role == "admin"))
-        if result.scalars().first():
-            return  # Admin already exists
-        
-        admin = User(
-            id=str(uuid.uuid4()),
-            email="admin@alquiler.com",
-            hashed_password=get_password_hash("admin123"),
-            full_name="Administrador",
-            role="admin",
-            is_active=True,
-            created_at=datetime.utcnow(),
-        )
-        db.add(admin)
-        await db.commit()
-        print(f"✅ Admin user created: admin@alquiler.com / admin123")
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Lifespan context manager for startup/shutdown events."""
     # Startup: DB tables managed by init.sql — no create_all
-    # Seed admin user
-    await seed_admin_user()
+    # Admin users are created via: python backend/scripts/createsuperuser.py
     yield
     # Shutdown: cleanup if needed
 
@@ -53,7 +26,40 @@ app = FastAPI(
     redoc_url="/api/redoc",
     openapi_url="/api/openapi.json",
     lifespan=lifespan,
+    # Swagger UI: show API key input for X-Access-Token
+    swagger_ui_init_oauth=None,
 )
+
+# API key scheme for Swagger UI — lets users paste the access_token
+app.openapi_schema = None  # Force rebuild on first request
+
+
+def custom_openapi():
+    if app.openapi_schema:
+        return app.openapi_schema
+    from fastapi.openapi.utils import get_openapi
+    schema = get_openapi(
+        title=app.title,
+        version=app.version,
+        description=app.description,
+        routes=app.routes,
+    )
+    # Add API key security scheme
+    schema["components"]["securitySchemes"] = {
+        "X-Access-Token": {
+            "type": "apiKey",
+            "in": "header",
+            "name": "X-Access-Token",
+            "description": "Access token from POST /api/login. Paste the access_token value.",
+        }
+    }
+    # Apply globally so all endpoints use it
+    schema["security"] = [{"X-Access-Token": []}]
+    app.openapi_schema = schema
+    return app.openapi_schema
+
+
+app.openapi = custom_openapi
 
 # CORS middleware
 app.add_middleware(

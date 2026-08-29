@@ -20,6 +20,10 @@ class ContratoBase(SQLModel):
     monto_base: Optional[float] = None
     moneda: Optional[str] = Field(default="ARS", max_length=3)
     indice: Optional[str] = Field(default=None, max_length=50)
+    periodo_indexacion: Optional[str] = Field(default=None, max_length=50)  # mensual, trimestral, anual
+    tipo_producto: Optional[str] = Field(default=None, max_length=100)  # soja, trigo, maiz, etc.
+    kilos: Optional[float] = None
+    precio_kilo: Optional[float] = None
     fuente_precio_agro: Optional[str] = Field(default=None, max_length=255)
     activo: bool = Field(default=True)
 
@@ -55,6 +59,10 @@ class ContratoUpdate(SQLModel):
     monto_base: Optional[float] = None
     moneda: Optional[str] = Field(default=None, max_length=3)
     indice: Optional[str] = Field(default=None, max_length=50)
+    periodo_indexacion: Optional[str] = Field(default=None, max_length=50)
+    tipo_producto: Optional[str] = Field(default=None, max_length=100)
+    kilos: Optional[float] = None
+    precio_kilo: Optional[float] = None
     fuente_precio_agro: Optional[str] = Field(default=None, max_length=255)
     activo: Optional[bool] = None
 

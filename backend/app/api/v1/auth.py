@@ -137,11 +137,12 @@ async def create_new_user(
 async def list_users(
     skip: int = 0,
     limit: int = 100,
+    role: str = None,
     db: AsyncSession = Depends(get_db),
     current_user: dict = Depends(get_current_active_user)
 ):
-    """List all users."""
-    return await get_users(db, skip=skip, limit=limit)
+    """List all users. Filter by role (e.g. ?role=admin for superusers)."""
+    return await get_users(db, skip=skip, limit=limit, role=role)
 
 
 @router.get("/users/{user_id}", response_model=UserResponse)

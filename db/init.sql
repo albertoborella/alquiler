@@ -2,21 +2,13 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
--- Create custom types
-CREATE TYPE user_role AS ENUM ('admin', 'empleado', 'contable');
-CREATE TYPE inmueble_categoria AS ENUM ('urbano', 'rural');
-CREATE TYPE inmueble_estado AS ENUM ('alquilado', 'disponible');
-CREATE TYPE contrato_frecuencia AS ENUM ('mensual', 'trimestral', 'anual', 'vencimiento');
-CREATE TYPE modalidad_pago AS ENUM ('pesos_indice', 'moneda_extranjera', 'producto_agropecuario');
-CREATE TYPE comprobante_tipo AS ENUM ('expensas', 'honorarios', 'comprobante');
-
 -- Users table
 CREATE TABLE users (
     id VARCHAR(36) PRIMARY KEY DEFAULT uuid_generate_v4()::text,
     email VARCHAR(255) UNIQUE NOT NULL,
     hashed_password VARCHAR(255) NOT NULL,
     full_name VARCHAR(255),
-    role user_role NOT NULL DEFAULT 'empleado',
+    role VARCHAR(50) NOT NULL DEFAULT 'empleado',
     is_active BOOLEAN DEFAULT true,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE
@@ -50,14 +42,14 @@ CREATE TABLE inquilinos (
 CREATE TABLE inmuebles (
     id VARCHAR(36) PRIMARY KEY DEFAULT uuid_generate_v4()::text,
     direccion VARCHAR(500) NOT NULL,
-    categoria inmueble_categoria NOT NULL DEFAULT 'urbano',
+    categoria VARCHAR(10) NOT NULL DEFAULT 'urbano',
     superficie DECIMAL(10,2),
     habitaciones INTEGER,
     banos INTEGER,
     dormitorios INTEGER,
     comodidades TEXT,
     descripcion TEXT,
-    estado inmueble_estado NOT NULL DEFAULT 'disponible',
+    estado VARCHAR(15) NOT NULL DEFAULT 'disponible',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE
 );
@@ -80,11 +72,15 @@ CREATE TABLE contratos (
     fecha_inicio DATE NOT NULL,
     fecha_fin DATE NOT NULL,
     fecha_maxima_pago INTEGER NOT NULL DEFAULT 10,
-    modalidad_pago modalidad_pago NOT NULL,
-    frecuencia contrato_frecuencia NOT NULL DEFAULT 'mensual',
+    modalidad_pago VARCHAR(30) NOT NULL,
+    frecuencia VARCHAR(15) NOT NULL DEFAULT 'mensual',
     monto_base DECIMAL(12,2),
     moneda VARCHAR(3) DEFAULT 'ARS',
     indice VARCHAR(50),
+    periodo_indexacion VARCHAR(50),
+    tipo_producto VARCHAR(100),
+    kilos DECIMAL(12,2),
+    precio_kilo DECIMAL(12,2),
     fuente_precio_agro VARCHAR(255),
     activo BOOLEAN DEFAULT true,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
@@ -112,7 +108,7 @@ CREATE TABLE comprobantes (
     id VARCHAR(36) PRIMARY KEY DEFAULT uuid_generate_v4()::text,
     cobro_id VARCHAR(36) NOT NULL REFERENCES cobros(id) ON DELETE RESTRICT,
     propietario_id VARCHAR(36) NOT NULL REFERENCES propietarios(id) ON DELETE RESTRICT,
-    tipo comprobante_tipo NOT NULL DEFAULT 'comprobante',
+    tipo VARCHAR(15) NOT NULL DEFAULT 'comprobante',
     numero VARCHAR(50),
     descripcion TEXT,
     monto_proporcional DECIMAL(12,2) NOT NULL,
