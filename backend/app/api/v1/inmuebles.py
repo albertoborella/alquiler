@@ -3,12 +3,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List, Optional
 
 from app.db.session import get_db
-from app.models.inmueble import InmuebleCreate, InmuebleUpdate, InmueblePublic
+from app.models.inmueble import InmuebleCreate, InmuebleUpdate, InmueblePublic, InmuebleCreateConPropietarios
 from app.models.copropiedad import CopropiedadCreate, CopropiedadPublic
 from app.crud.inmueble import (
     get_inmueble,
     get_inmuebles,
     create_inmueble,
+    create_inmueble_with_propietarios,
     update_inmueble,
     delete_inmueble,
     get_copropiedad_by_inmueble,
@@ -48,12 +49,26 @@ async def read_inmueble(
 
 @router.post("/", response_model=InmueblePublic, status_code=status.HTTP_201_CREATED)
 async def create_new_inmueble(
-    inmueble_in: InmuebleCreate,
+    inmueble_in: InmuebleCreateConPropietarios,
     db: AsyncSession = Depends(get_db),
     current_user = Depends(get_current_active_user)
 ):
-    """Create a new inmueble."""
-    return await create_inmueble(db, inmueble_in)
+    """Create a new inmueble, optionally attaching propietarios atomically.
+
+    Backward compatible: ``InmuebleCreateConPropietarios`` extends
+    ``InmuebleCreate`` and defaults ``propietarios=[]``.
+    """
+    try:
+        return await create_inmueble_with_propietarios(
+            db, inmueble_in, inmueble_in.propietarios
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception:
+        raise HTTPException(
+            status_code=400,
+            detail="No se pudo crear el inmueble. Verificá los datos de los propietarios.",
+        )
 
 
 @router.put("/{inmueble_id}", response_model=InmueblePublic)

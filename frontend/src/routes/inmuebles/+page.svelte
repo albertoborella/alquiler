@@ -4,12 +4,12 @@
   import { auth } from '$lib/stores/auth';
   import { api } from '$lib/api';
   import type { InmuebleDashboard, CobroPublic, InquilinoPublic } from '$lib/api';
+  import NuevoInmuebleModal from '$lib/components/NuevoInmuebleModal.svelte';
 
   let inmuebles: InmuebleDashboard[] = [];
   let loading = true;
   let error = '';
   let filterEstado = '';
-  let filterCategoria = '';
 
   // ── Delete modal ──
   let showDeleteConfirm = false;
@@ -64,19 +64,6 @@
 
   // ── Nuevo Inmueble modal ──
   let showNuevoInmuebleModal = false;
-  let nuevoInmForm = {
-    direccion: '',
-    categoria: 'urbano',
-    superficie: '',
-    habitaciones: '',
-    banos: '',
-    dormitorios: '',
-    comodidades: '',
-    descripcion: '',
-  };
-  let nuevoInmSubmitting = false;
-  let nuevoInmSuccess = '';
-  let nuevoInmError = '';
 
   $: isAdmin = $auth.user?.role === 'admin';
   $: isRural = contratoTarget?.categoria === 'rural';
@@ -97,7 +84,7 @@
     try {
       inmuebles = await api.getDashboardInmuebles($auth.token, {
         estado: filterEstado || undefined,
-        categoria: filterCategoria || undefined,
+        categoria: 'urbano',
       });
     } catch (err) {
       error = err instanceof Error ? err.message : 'Error al cargar inmuebles';
@@ -293,51 +280,15 @@
 
   // ── Nuevo Inmueble ──
   function openNuevoInmueble() {
-    nuevoInmForm = {
-      direccion: '',
-      categoria: 'urbano',
-      superficie: '',
-      habitaciones: '',
-      banos: '',
-      dormitorios: '',
-      comodidades: '',
-      descripcion: '',
-    };
-    nuevoInmSuccess = '';
-    nuevoInmError = '';
     showNuevoInmuebleModal = true;
   }
 
-  function cancelNuevoInmueble() {
+  function cerrarNuevoInmueble() {
     showNuevoInmuebleModal = false;
   }
 
-  async function executeNuevoInmueble() {
-    if (!$auth.token) return;
-    nuevoInmSubmitting = true;
-    nuevoInmError = '';
-    nuevoInmSuccess = '';
-    try {
-      await api.createInmueble($auth.token, {
-        direccion: nuevoInmForm.direccion,
-        categoria: nuevoInmForm.categoria,
-        superficie: nuevoInmForm.superficie ? parseFloat(nuevoInmForm.superficie) : undefined,
-        habitaciones: nuevoInmForm.habitaciones ? parseInt(nuevoInmForm.habitaciones) : undefined,
-        banos: nuevoInmForm.banos ? parseInt(nuevoInmForm.banos) : undefined,
-        dormitorios: nuevoInmForm.dormitorios ? parseInt(nuevoInmForm.dormitorios) : undefined,
-        comodidades: nuevoInmForm.comodidades || undefined,
-        descripcion: nuevoInmForm.descripcion || undefined,
-      });
-      nuevoInmSuccess = 'Inmueble creado exitosamente';
-      await loadInmuebles();
-      setTimeout(() => {
-        showNuevoInmuebleModal = false;
-      }, 1500);
-    } catch (err) {
-      nuevoInmError = err instanceof Error ? err.message : 'Error al crear inmueble';
-    } finally {
-      nuevoInmSubmitting = false;
-    }
+  async function handleInmuebleCreated() {
+    await loadInmuebles();
   }
 
   // ── Helpers ──
@@ -397,20 +348,6 @@
             <option value="alquilado">Alquilado</option>
             <option value="disponible">Disponible</option>
           </select>
-
-          <label for="filterCategoria" class="text-sm font-medium text-gray-700 dark:text-gray-300">
-            Categoría:
-          </label>
-          <select
-            id="filterCategoria"
-            bind:value={filterCategoria}
-            on:change={handleFilterChange}
-            class="px-3 py-1.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-          >
-            <option value="">Todas</option>
-            <option value="urbano">Urbano</option>
-            <option value="rural">Rural</option>
-          </select>
         </div>
 
         {#if isAdmin}
@@ -468,67 +405,67 @@
         <table class="w-full min-w-[640px]">
           <thead>
             <tr class="text-left text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider border-b border-gray-100 dark:border-gray-800">
-              <th class="px-4 md:px-5 py-2">Dirección</th>
-              <th class="px-4 md:px-5 py-2 hidden sm:table-cell">Propietario(s)</th>
-              <th class="px-4 md:px-5 py-2">Estado</th>
-              <th class="px-4 md:px-5 py-2 hidden lg:table-cell">Inquilino</th>
-              <th class="px-4 md:px-5 py-2 hidden sm:table-cell">Monto</th>
-              <th class="px-4 md:px-5 py-2 hidden md:table-cell">Vencimiento</th>
-              <th class="px-4 md:px-5 py-2">Moroso</th>
+              <th class="px-3 md:px-4 py-1">Dirección</th>
+              <th class="px-3 md:px-4 py-1 hidden sm:table-cell">Propietario(s)</th>
+              <th class="px-3 md:px-4 py-1">Estado</th>
+              <th class="px-3 md:px-4 py-1 hidden lg:table-cell">Inquilino</th>
+              <th class="px-3 md:px-4 py-1 hidden sm:table-cell">Monto</th>
+              <th class="px-3 md:px-4 py-1 hidden md:table-cell">Vencimiento</th>
+              <th class="px-3 md:px-4 py-1">Moroso</th>
               {#if isAdmin}
-                <th class="px-4 md:px-5 py-2 text-right">Acciones</th>
+                <th class="px-3 md:px-4 py-1 text-right">Acciones</th>
               {/if}
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-50 dark:divide-gray-800">
             {#each inmuebles as inm (inm.id)}
               <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
-                <td class="px-4 md:px-5 py-2">
-                  <div class="text-[13px] font-medium text-gray-900 dark:text-gray-100">{inm.direccion}</div>
+                <td class="px-3 md:px-4 py-1">
+                  <div class="text-xs font-medium text-gray-900 dark:text-gray-100">{inm.direccion}</div>
                   <div class="text-[11px] text-gray-400 dark:text-gray-500 mt-0.5 sm:hidden">
                     {inm.categoria}{inm.superficie ? ` · ${inm.superficie} m²` : ''}
                   </div>
                 </td>
-                <td class="px-4 md:px-5 py-2 text-[13px] text-gray-600 dark:text-gray-400 hidden sm:table-cell">
+                <td class="px-3 md:px-4 py-1 text-xs text-gray-600 dark:text-gray-400 hidden sm:table-cell">
                   {#if inm.propietarios.length > 0}
                     {#each inm.propietarios as prop, i}{prop.nombre}{i < inm.propietarios.length - 1 ? ', ' : ''}{/each}
                   {:else}
                     <span class="text-gray-400">-</span>
                   {/if}
                 </td>
-                <td class="px-4 md:px-5 py-2">
+                <td class="px-3 md:px-4 py-1">
                   <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium {estadoBadgeClass(inm.estado)}">
                     {estadoLabel(inm.estado)}
                   </span>
                 </td>
-                <td class="px-4 md:px-5 py-2 text-[13px] text-gray-600 dark:text-gray-400 hidden lg:table-cell">
+                <td class="px-3 md:px-4 py-1 text-xs text-gray-600 dark:text-gray-400 hidden lg:table-cell">
                   {#if inm.inquilino}
                     {inm.inquilino.nombre}
                   {:else}
                     <span class="text-gray-400">-</span>
                   {/if}
                 </td>
-                <td class="px-4 md:px-5 py-2 text-[13px] text-gray-600 dark:text-gray-400 hidden sm:table-cell">
+                <td class="px-3 md:px-4 py-1 text-xs text-gray-600 dark:text-gray-400 hidden sm:table-cell">
                   {#if inm.contrato}
                     {formatCurrency(inm.contrato.monto_base, inm.contrato.moneda)}
                   {:else}
                     <span class="text-gray-400">-</span>
                   {/if}
                 </td>
-                <td class="px-4 md:px-5 py-2 text-[13px] text-gray-500 dark:text-gray-400 hidden md:table-cell">
+                <td class="px-3 md:px-4 py-1 text-xs text-gray-500 dark:text-gray-400 hidden md:table-cell">
                   {#if inm.contrato}
                     {formatDate(inm.contrato.fecha_fin)}
                   {:else}
                     <span class="text-gray-400">-</span>
                   {/if}
                 </td>
-                <td class="px-4 md:px-5 py-2">
+                <td class="px-3 md:px-4 py-1">
                   <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium {morosoBadgeClass(inm.moroso)}">
                     {inm.moroso ? 'Sí' : 'No'}
                   </span>
                 </td>
                 {#if isAdmin}
-                  <td class="px-4 md:px-5 py-2 text-right">
+                  <td class="px-3 md:px-4 py-1 text-right">
                     <div class="flex items-center justify-end gap-0.5">
                       <!-- Ver propietarios -->
                       {#if inm.propietarios.length > 0}
@@ -898,7 +835,7 @@
             class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent">
             <option value="">Seleccionar inquilino...</option>
             {#each inquilinos as inq}
-              <option value={inq.id}>{inq.nombre} (DNI: {inq.dni})</option>
+              <option value={inq.id}>{inq.nombre} (CUIT: {inq.cuit})</option>
             {/each}
           </select>
           {#if inquilinosLoading}
@@ -1011,105 +948,11 @@
 {/if}
 
 <!-- ═══════════════════════════════════════════════════════════ -->
-<!-- NUEVO INMUEBLE MODAL                                       -->
+<!-- NUEVO INMUEBLE MODAL (shared component)                    -->
 <!-- ═══════════════════════════════════════════════════════════ -->
-{#if showNuevoInmuebleModal}
-  <div class="fixed inset-0 z-50 flex items-center justify-center">
-    <div class="absolute inset-0 bg-black/50" on:click={cancelNuevoInmueble} role="presentation"></div>
-    <div class="relative bg-white dark:bg-gray-900 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 w-full max-w-lg mx-4 p-6">
-      <div class="flex items-center gap-3 mb-5">
-        <div class="w-10 h-10 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
-          <svg class="w-5 h-5 text-primary-600 dark:text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-          </svg>
-        </div>
-        <div>
-          <h3 class="text-base font-semibold text-gray-900 dark:text-gray-100">Nuevo inmueble</h3>
-          <p class="text-sm text-gray-500 dark:text-gray-400">Se crea como disponible</p>
-        </div>
-      </div>
-
-      {#if nuevoInmSuccess}
-        <div class="bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300 text-sm rounded-lg px-4 py-3 border border-emerald-100 dark:border-emerald-800 mb-4">
-          {nuevoInmSuccess}
-        </div>
-      {/if}
-
-      {#if nuevoInmError}
-        <div class="bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 text-sm rounded-lg px-4 py-3 border border-red-100 dark:border-red-800 mb-4">
-          {nuevoInmError}
-        </div>
-      {/if}
-
-      <form on:submit|preventDefault={executeNuevoInmueble} class="space-y-4">
-        <!-- Direccion -->
-        <div>
-          <label for="nuevo-inm-direccion" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Direccion *</label>
-          <input id="nuevo-inm-direccion" type="text" bind:value={nuevoInmForm.direccion} required placeholder="Ej: Av. Corrientes 1234"
-            class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent" />
-        </div>
-
-        <!-- Categoria + Superficie -->
-        <div class="grid grid-cols-2 gap-4">
-          <div>
-            <label for="nuevo-inm-categoria" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Categoria *</label>
-            <select id="nuevo-inm-categoria" bind:value={nuevoInmForm.categoria}
-              class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent">
-              <option value="urbano">Urbano</option>
-              <option value="rural">Rural</option>
-            </select>
-          </div>
-          <div>
-            <label for="nuevo-inm-superficie" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Superficie (m2)</label>
-            <input id="nuevo-inm-superficie" type="number" step="0.01" min="0" bind:value={nuevoInmForm.superficie} placeholder="0.00"
-              class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent" />
-          </div>
-        </div>
-
-        <!-- Habitaciones / Banos / Dormitorios -->
-        <div class="grid grid-cols-3 gap-4">
-          <div>
-            <label for="nuevo-inm-hab" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Habitaciones</label>
-            <input id="nuevo-inm-hab" type="number" min="0" bind:value={nuevoInmForm.habitaciones} placeholder="0"
-              class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent" />
-          </div>
-          <div>
-            <label for="nuevo-inm-banos" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Banos</label>
-            <input id="nuevo-inm-banos" type="number" min="0" bind:value={nuevoInmForm.banos} placeholder="0"
-              class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent" />
-          </div>
-          <div>
-            <label for="nuevo-inm-dorm" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Dormitorios</label>
-            <input id="nuevo-inm-dorm" type="number" min="0" bind:value={nuevoInmForm.dormitorios} placeholder="0"
-              class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent" />
-          </div>
-        </div>
-
-        <!-- Comodidades -->
-        <div>
-          <label for="nuevo-inm-comodidades" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Comodidades</label>
-          <input id="nuevo-inm-comodidades" type="text" bind:value={nuevoInmForm.comodidades} placeholder="Ej: pileta, parrilla, garage"
-            class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent" />
-        </div>
-
-        <!-- Descripcion -->
-        <div>
-          <label for="nuevo-inm-descripcion" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Descripcion</label>
-          <textarea id="nuevo-inm-descripcion" bind:value={nuevoInmForm.descripcion} rows="2" placeholder="Notas adicionales..."
-            class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none"></textarea>
-        </div>
-
-        <div class="flex justify-end gap-3 pt-2">
-          <button type="button" on:click={cancelNuevoInmueble} disabled={nuevoInmSubmitting}
-            class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg transition-colors cursor-pointer disabled:opacity-50">
-            Cancelar
-          </button>
-          <button type="submit" disabled={nuevoInmSubmitting || !nuevoInmForm.direccion}
-            class="px-4 py-2 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 disabled:bg-primary-400 rounded-lg transition-colors cursor-pointer disabled:cursor-not-allowed">
-            {nuevoInmSubmitting ? 'Creando...' : 'Crear inmueble'}
-          </button>
-        </div>
-      </form>
-    </div>
-  </div>
-{/if}
+<NuevoInmuebleModal
+  open={showNuevoInmuebleModal}
+  defaultCategoria="urbano"
+  onClose={cerrarNuevoInmueble}
+  onCreated={handleInmuebleCreated}
+/>

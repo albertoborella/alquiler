@@ -39,6 +39,23 @@ class InmuebleCreate(InmuebleBase):
     pass
 
 
+class InmueblePropietarioIn(SQLModel):
+    """A propietario to attach: either an existing one by id, or new owner data to create."""
+    propietario_id: Optional[str] = None       # if set, use existing propietario
+    porcentaje_participacion: float = 100.00
+    # fields to create a NEW propietario (used only when propietario_id is None):
+    nombre: Optional[str] = None
+    dni_cuit: Optional[str] = None
+    telefono: Optional[str] = None
+    email: Optional[str] = None
+    direccion: Optional[str] = None
+
+
+class InmuebleCreateConPropietarios(InmuebleCreate):
+    """Schema for creating an inmueble together with its propietarios (atomic)."""
+    propietarios: List[InmueblePropietarioIn] = []
+
+
 class InmuebleUpdate(SQLModel):
     """Schema for updating an inmueble."""
     direccion: Optional[str] = Field(default=None, max_length=500)

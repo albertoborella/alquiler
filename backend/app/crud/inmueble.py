@@ -3,8 +3,10 @@ from datetime import datetime
 import uuid
 from sqlmodel import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.models.inmueble import Inmueble, InmuebleCreate, InmuebleUpdate
+from app.models.inmueble import Inmueble, InmuebleCreate, InmuebleUpdate, InmueblePropietarioIn
 from app.models.copropiedad import Copropiedad, CopropiedadCreate
+from app.models.propietario import Propietario, PropietarioCreate
+from app.crud.propietario import get_propietario, get_propietario_by_dni_cuit
 
 
 async def get_inmueble(db: AsyncSession, inmueble_id: str) -> Optional[Inmueble]:
@@ -51,6 +53,79 @@ async def create_inmueble(db: AsyncSession, inmueble_in: InmuebleCreate) -> Inmu
     )
     
     db.add(inmueble)
+    await db.commit()
+    await db.refresh(inmueble)
+    return inmueble
+
+
+async def create_inmueble_with_propietarios(
+    db: AsyncSession,
+    inmueble_in: InmuebleCreate,
+    propietarios_in: List[InmueblePropietarioIn],
+) -> Inmueble:
+    """Create an inmueble and attach propietarios in ONE atomic transaction.
+
+    Each entry in ``propietarios_in`` either references an existing propietario
+    by ``propietario_id``, or provides data to create a new one. Nothing is
+    committed until every inmueble, propietario and copropiedad row has been
+    added to the session, so a failure anywhere rolls back everything.
+    """
+    inmueble_id = str(uuid.uuid4())
+    inmueble = Inmueble(
+        id=inmueble_id,
+        direccion=inmueble_in.direccion,
+        categoria=inmueble_in.categoria,
+        superficie=inmueble_in.superficie,
+        habitaciones=inmueble_in.habitaciones,
+        banos=inmueble_in.banos,
+        dormitorios=inmueble_in.dormitorios,
+        comodidades=inmueble_in.comodidades,
+        descripcion=inmueble_in.descripcion,
+        estado=inmueble_in.estado,
+        created_at=datetime.utcnow(),
+    )
+    db.add(inmueble)
+
+    for item in propietarios_in:
+        if item.propietario_id:
+            propietario = await get_propietario(db, item.propietario_id)
+            if not propietario:
+                raise ValueError(f"Propietario {item.propietario_id} no existe")
+            propietario_id = propietario.id
+        else:
+            if not item.nombre or not item.dni_cuit:
+                raise ValueError("Para crear un nuevo propietario, nombre y DNI/CUIT son obligatorios")
+            # If a propietario with that dni_cuit already exists, reuse it.
+            existing = await get_propietario_by_dni_cuit(db, item.dni_cuit)
+            if existing:
+                propietario_id = existing.id
+            else:
+                propietario = Propietario(
+                    id=str(uuid.uuid4()),
+                    nombre=item.nombre,
+                    dni_cuit=item.dni_cuit,
+                    telefono=item.telefono,
+                    email=item.email,
+                    direccion=item.direccion,
+                    created_at=datetime.utcnow(),
+                )
+                db.add(propietario)
+                # Persist the new propietario BEFORE building the copropiedad
+                # that references it, otherwise SQLAlchemy may flush the
+                # copropiedad insert first and hit the propietarios FK violation.
+                await db.flush()
+                propietario_id = propietario.id
+
+        copropiedad = Copropiedad(
+            id=str(uuid.uuid4()),
+            propietario_id=propietario_id,
+            inmueble_id=inmueble_id,
+            porcentaje_participacion=item.porcentaje_participacion,
+            created_at=datetime.utcnow(),
+        )
+        db.add(copropiedad)
+
+    # Single commit at the end makes the whole operation atomic.
     await db.commit()
     await db.refresh(inmueble)
     return inmueble
