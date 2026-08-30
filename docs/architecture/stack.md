@@ -20,7 +20,8 @@
 - **Estado**: Svelte stores
 - **Navegación**: Scroll infinito en todos los listados
 - **Tema**: Modo claro/oscuro con persistencia en localStorage
-- **Responsive**: Sidebar oculto en mobile (hamburger), tablas con scroll horizontal, columnas progresivas
+- **Responsive**: Sidebar oculto en mobile (hamburger), tablas con scroll horizontal, columnas progresivas. En desktop el sidebar es colapsable via un toggle (icono) en la barra de navegacion y en el pie del sidebar; al colapsarse, el area de contenido se ensancha para aprovechar el ancho disponible.
+- **Inmuebles por categoria**: los inmuebles se dividen en dos vistas segun `categoria` — **urbanos** en `/inmuebles` y **rurales** en `/inmuebles/rural` — cada una con su propia tabla y filtro de estado. El alta de inmueble (componente `NuevoInmuebleModal`) permite asignar propietarios y sus porcentajes de participacion, seleccionando existentes o creando nuevos en el mismo modal. Los inmuebles rurales muestran solo direccion, propietarios, superficie en hectareas y morosidad.
 
 ### Paquetes principales
 - `@sveltejs/kit` - Framework principal

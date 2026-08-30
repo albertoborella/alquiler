@@ -214,58 +214,58 @@
         <table class="w-full min-w-[640px]">
           <thead>
             <tr class="text-left text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider border-b border-gray-100 dark:border-gray-800">
-              <th class="px-4 md:px-5 py-2">Dirección</th>
-              <th class="px-4 md:px-5 py-2 hidden sm:table-cell">Propietario(s)</th>
-              <th class="px-4 md:px-5 py-2">Estado</th>
-              <th class="px-4 md:px-5 py-2 hidden lg:table-cell">Inquilino</th>
-              <th class="px-4 md:px-5 py-2 hidden sm:table-cell">Monto</th>
-              <th class="px-4 md:px-5 py-2 hidden md:table-cell">Vencimiento</th>
-              <th class="px-4 md:px-5 py-2">Moroso</th>
+              <th class="px-3 md:px-4 py-1">Dirección</th>
+              <th class="px-3 md:px-4 py-1 hidden sm:table-cell">Propietario(s)</th>
+              <th class="px-3 md:px-4 py-1">Estado</th>
+              <th class="px-3 md:px-4 py-1 hidden lg:table-cell">Inquilino</th>
+              <th class="px-3 md:px-4 py-1 hidden sm:table-cell">Monto</th>
+              <th class="px-3 md:px-4 py-1 hidden md:table-cell">Vencimiento</th>
+              <th class="px-3 md:px-4 py-1">Moroso</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-50 dark:divide-gray-800">
             {#each inmuebles as inm (inm.id)}
               <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
-                <td class="px-4 md:px-5 py-2">
-                  <div class="text-[13px] font-medium text-gray-900 dark:text-gray-100">{inm.direccion}</div>
+                <td class="px-3 md:px-4 py-1">
+                  <div class="text-xs font-medium text-gray-900 dark:text-gray-100">{inm.direccion}</div>
                   <div class="text-[11px] text-gray-400 dark:text-gray-500 mt-0.5 sm:hidden">
                     {inm.categoria}{inm.superficie ? ` · ${inm.superficie} m²` : ''}
                   </div>
                 </td>
-                <td class="px-4 md:px-5 py-2 text-[13px] text-gray-600 dark:text-gray-400 hidden sm:table-cell">
+                <td class="px-3 md:px-4 py-1 text-xs text-gray-600 dark:text-gray-400 hidden sm:table-cell">
                   {#if inm.propietarios.length > 0}
                     {#each inm.propietarios as prop, i}{prop.nombre}{i < inm.propietarios.length - 1 ? ', ' : ''}{/each}
                   {:else}
                     <span class="text-gray-400">-</span>
                   {/if}
                 </td>
-                <td class="px-4 md:px-5 py-2">
+                <td class="px-3 md:px-4 py-1">
                   <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium {estadoBadgeClass(inm.estado)}">
                     {estadoLabel(inm.estado)}
                   </span>
                 </td>
-                <td class="px-4 md:px-5 py-2 text-[13px] text-gray-600 dark:text-gray-400 hidden lg:table-cell">
+                <td class="px-3 md:px-4 py-1 text-xs text-gray-600 dark:text-gray-400 hidden lg:table-cell">
                   {#if inm.inquilino}
                     {inm.inquilino.nombre}
                   {:else}
                     <span class="text-gray-400">-</span>
                   {/if}
                 </td>
-                <td class="px-4 md:px-5 py-2 text-[13px] text-gray-600 dark:text-gray-400 hidden sm:table-cell">
+                <td class="px-3 md:px-4 py-1 text-xs text-gray-600 dark:text-gray-400 hidden sm:table-cell">
                   {#if inm.contrato}
                     {formatCurrency(inm.contrato.monto_base, inm.contrato.moneda)}
                   {:else}
                     <span class="text-gray-400">-</span>
                   {/if}
                 </td>
-                <td class="px-4 md:px-5 py-2 text-[13px] text-gray-500 dark:text-gray-400 hidden md:table-cell">
+                <td class="px-3 md:px-4 py-1 text-xs text-gray-500 dark:text-gray-400 hidden md:table-cell">
                   {#if inm.contrato}
                     {formatDate(inm.contrato.fecha_fin)}
                   {:else}
                     <span class="text-gray-400">-</span>
                   {/if}
                 </td>
-                <td class="px-4 md:px-5 py-2">
+                <td class="px-3 md:px-4 py-1">
                   <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium {morosoBadgeClass(inm.moroso)}">
                     {inm.moroso ? 'Sí' : 'No'}
                   </span>

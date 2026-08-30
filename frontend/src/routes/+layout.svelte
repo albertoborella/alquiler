@@ -2,6 +2,7 @@
   import '../app.css';
   import { auth } from '$lib/stores/auth';
   import { theme } from '$lib/stores/theme';
+  import { sidebar } from '$lib/stores/sidebar';
   import { page } from '$app/stores';
   import { goto } from '$app/navigation';
   import Sidebar from '$lib/components/Sidebar.svelte';
@@ -42,6 +43,24 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex justify-between h-16">
         <div class="flex items-center">
+          {#if showSidebar}
+            <button
+              on:click={() => sidebar.toggle()}
+              class="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer"
+              title="Mostrar/ocultar menú"
+              aria-label="Mostrar/ocultar menú"
+            >
+              {#if $sidebar}
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h18M3 12h18M3 19h12" />
+                </svg>
+              {:else}
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h10M4 18h16" />
+                </svg>
+              {/if}
+            </button>
+          {/if}
           <a href="/" class="flex items-center gap-2" on:click={closeMenu}>
             <svg class="w-6 h-6 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
@@ -168,7 +187,7 @@
     <Sidebar />
   {/if}
 
-  <main class="flex-1 pt-16 {showSidebar ? 'md:ml-44' : ''}">
+  <main class="flex-1 pt-16 {showSidebar ? ($sidebar ? 'md:ml-12' : 'md:ml-36') : ''}">
     <div class="p-4 md:p-6">
       <slot />
     </div>

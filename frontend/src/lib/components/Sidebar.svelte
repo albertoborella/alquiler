@@ -1,5 +1,6 @@
 <script lang="ts">
   import { page } from '$app/stores';
+  import { sidebar } from '$lib/stores/sidebar';
 
   interface NavItem {
     label: string;
@@ -9,9 +10,14 @@
 
   const navItems: NavItem[] = [
     {
-      label: 'Inmuebles',
+      label: 'Inmuebles urbanos',
       href: '/inmuebles',
       icon: 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4',
+    },
+    {
+      label: 'Inmuebles rurales',
+      href: '/inmuebles/rural',
+      icon: 'M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H17a2 2 0 012 2v14m-14-4h14M8 7h3m1 4h3m-6 4h5M5 21h14',
     },
     {
       label: 'Propietarios',
@@ -41,18 +47,32 @@
   ];
 
   $: currentPath = $page.url.pathname;
+
+  // `currentPath` must be passed as an argument so Svelte treats it as a template
+  // dependency. Calling a function that reads reactive state WITHOUT passing it as
+  // an argument does NOT re-evaluate on navigation, leaving the highlight stuck.
+  function isActive(path: string, item: NavItem): boolean {
+    // /inmuebles must not highlight when on /inmuebles/rural
+    if (item.href === '/inmuebles') {
+      return path === '/inmuebles';
+    }
+    return path.startsWith(item.href);
+  }
 </script>
 
 <!-- Desktop sidebar: fixed, hidden on mobile -->
-<aside class="hidden md:flex w-44 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 pt-14 min-h-screen fixed left-0 top-0 z-40 flex-col">
-  <nav class="flex-1 px-2 py-3 space-y-0.5">
+<aside
+  class="hidden md:flex {$sidebar ? 'w-12' : 'w-36'} bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 pt-14 min-h-screen fixed left-0 top-0 z-40 flex-col transition-all duration-200"
+>
+  <nav class="flex-1 px-1.5 py-3 space-y-0.5">
     {#each navItems as item}
       <a
         href={item.href}
-        class="flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[13px] font-medium transition-colors
-          {currentPath.startsWith(item.href)
+        class="flex items-center {$sidebar ? 'justify-center' : 'gap-2.5 px-2.5'} py-1.5 rounded-lg text-xs font-normal transition-colors
+          {isActive(currentPath, item)
             ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300'
             : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'}"
+        title={$sidebar ? item.label : undefined}
       >
         <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
@@ -62,12 +82,33 @@
             d={item.icon}
           />
         </svg>
-        {item.label}
+        {#if !$sidebar}
+          {item.label}
+        {/if}
       </a>
     {/each}
   </nav>
 
-  <div class="px-2.5 py-3 border-t border-gray-200 dark:border-gray-800">
-    <p class="text-[11px] text-gray-400 px-2">Alquiler App v0.1</p>
+  <div class="px-1.5 py-3 border-t border-gray-200 dark:border-gray-800">
+    <button
+      on:click={() => sidebar.toggle()}
+      class="w-full flex items-center {$sidebar ? 'justify-center' : 'gap-2.5'} px-2 py-1.5 rounded-lg text-xs font-normal text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100 transition-colors cursor-pointer"
+      title={$sidebar ? 'Expandir menú' : 'Contraer menú'}
+      aria-label={$sidebar ? 'Expandir menú' : 'Contraer menú'}
+    >
+      <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        {#if $sidebar}
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+        {:else}
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+        {/if}
+      </svg>
+      {#if !$sidebar}
+        Contraer menú
+      {/if}
+    </button>
+    {#if !$sidebar}
+      <p class="text-[11px] text-gray-400 px-2 pt-1">Alquiler App v0.1</p>
+    {/if}
   </div>
 </aside>

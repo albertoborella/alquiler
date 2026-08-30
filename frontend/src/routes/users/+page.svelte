@@ -163,26 +163,26 @@
         <table class="w-full min-w-[520px]">
           <thead>
             <tr class="text-left text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider border-b border-gray-100 dark:border-gray-800">
-              <th class="px-4 md:px-5 py-2">Nombre</th>
-              <th class="px-4 md:px-5 py-2 hidden sm:table-cell">Email</th>
-              <th class="px-4 md:px-5 py-2">Rol</th>
-              <th class="px-4 md:px-5 py-2">Estado</th>
-              <th class="px-4 md:px-5 py-2 hidden md:table-cell">Fecha creación</th>
+              <th class="px-3 md:px-4 py-1">Nombre</th>
+              <th class="px-3 md:px-4 py-1 hidden sm:table-cell">Email</th>
+              <th class="px-3 md:px-4 py-1">Rol</th>
+              <th class="px-3 md:px-4 py-1">Estado</th>
+              <th class="px-3 md:px-4 py-1 hidden md:table-cell">Fecha creación</th>
               {#if isAdmin}
-                <th class="px-4 md:px-5 py-2 text-right">Acciones</th>
+                <th class="px-3 md:px-4 py-1 text-right">Acciones</th>
               {/if}
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-50 dark:divide-gray-800">
             {#each users as user (user.id)}
               <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
-                <td class="px-5 py-2.5 text-[13px] font-medium text-gray-900 dark:text-gray-100">
+                <td class="px-3 py-1 text-xs font-medium text-gray-900 dark:text-gray-100">
                   {user.full_name || '-'}
                 </td>
-                <td class="px-5 py-2.5 text-[13px] text-gray-600 dark:text-gray-400">
+                <td class="px-3 py-1 text-xs text-gray-600 dark:text-gray-400">
                   {user.email}
                 </td>
-                <td class="px-5 py-2.5">
+                <td class="px-3 py-1">
                   <span
                     class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium {getRoleBadgeClass(
                       user.role
@@ -191,23 +191,23 @@
                     {getRoleLabel(user.role)}
                   </span>
                 </td>
-                <td class="px-5 py-2.5">
+                <td class="px-3 py-1">
                   <div class="flex items-center gap-2">
                     <div
                       class="w-1.5 h-1.5 rounded-full {user.is_active
                         ? 'bg-green-500'
                         : 'bg-red-500'}"
                     ></div>
-                    <span class="text-[13px] text-gray-600 dark:text-gray-400">
+                    <span class="text-xs text-gray-600 dark:text-gray-400">
                       {user.is_active ? 'Activo' : 'Inactivo'}
                     </span>
                   </div>
                 </td>
-                <td class="px-5 py-2.5 text-[13px] text-gray-500 dark:text-gray-400">
+                <td class="px-3 py-1 text-xs text-gray-500 dark:text-gray-400">
                   {formatDate(user.created_at)}
                 </td>
                 {#if isAdmin}
-                  <td class="px-5 py-2.5 text-right">
+                  <td class="px-3 py-1 text-right">
                     <div class="flex items-center justify-end gap-1">
                       <!-- Edit icon -->
                       <a
