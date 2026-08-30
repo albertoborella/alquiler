@@ -150,7 +150,8 @@ async def get_dashboard_inmuebles(
                 {
                     "id": inq.id,
                     "nombre": inq.nombre,
-                    "dni": inq.dni,
+                    "cuit": inq.cuit,
+                    "iva": inq.iva,
                     "telefono": inq.telefono,
                     "email": inq.email,
                 }

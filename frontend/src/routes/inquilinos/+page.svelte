@@ -14,7 +14,8 @@
   let editTarget: InquilinoPublic | null = null;
   let form = {
     nombre: '',
-    dni: '',
+    cuit: '',
+    iva: '',
     telefono: '',
     email: '',
     direccion: '',
@@ -54,7 +55,7 @@
   // ── Create / Edit ──
   function openCreate() {
     editTarget = null;
-    form = { nombre: '', dni: '', telefono: '', email: '', direccion: '' };
+    form = { nombre: '', cuit: '', iva: '', telefono: '', email: '', direccion: '' };
     success = '';
     formError = '';
     showModal = true;
@@ -64,7 +65,8 @@
     editTarget = inq;
     form = {
       nombre: inq.nombre,
-      dni: inq.dni,
+      cuit: inq.cuit ?? '',
+      iva: inq.iva ?? '',
       telefono: inq.telefono ?? '',
       email: inq.email ?? '',
       direccion: inq.direccion ?? '',
@@ -88,7 +90,8 @@
       if (editTarget) {
         await api.updateInquilino($auth.token, editTarget.id, {
           nombre: form.nombre,
-          dni: form.dni,
+          cuit: form.cuit,
+          iva: form.iva || undefined,
           telefono: form.telefono || undefined,
           email: form.email || undefined,
           direccion: form.direccion || undefined,
@@ -97,7 +100,8 @@
       } else {
         await api.createInquilino($auth.token, {
           nombre: form.nombre,
-          dni: form.dni,
+          cuit: form.cuit,
+          iva: form.iva || undefined,
           telefono: form.telefono || undefined,
           email: form.email || undefined,
           direccion: form.direccion || undefined,
@@ -206,24 +210,26 @@
         <table class="w-full min-w-[600px]">
           <thead>
             <tr class="text-left text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider border-b border-gray-100 dark:border-gray-800">
-              <th class="px-4 md:px-5 py-2">Nombre</th>
-              <th class="px-4 md:px-5 py-2">DNI</th>
-              <th class="px-4 md:px-5 py-2 hidden sm:table-cell">Telefono</th>
-              <th class="px-4 md:px-5 py-2 hidden md:table-cell">Email</th>
-              <th class="px-4 md:px-5 py-2 text-right">Acciones</th>
+              <th class="px-3 md:px-4 py-1">Nombre</th>
+              <th class="px-3 md:px-4 py-1">CUIT</th>
+              <th class="px-3 md:px-4 py-1 hidden sm:table-cell">IVA</th>
+              <th class="px-3 md:px-4 py-1 hidden sm:table-cell">Telefono</th>
+              <th class="px-3 md:px-4 py-1 hidden md:table-cell">Email</th>
+              <th class="px-3 md:px-4 py-1 text-right">Acciones</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-50 dark:divide-gray-800">
             {#each inquilinos as inq (inq.id)}
               <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
-                <td class="px-4 md:px-5 py-2">
-                  <div class="text-[13px] font-medium text-gray-900 dark:text-gray-100">{inq.nombre}</div>
-                  <div class="text-[11px] text-gray-400 dark:text-gray-500 mt-0.5 sm:hidden">{inq.dni}</div>
+                <td class="px-3 md:px-4 py-1">
+                  <div class="text-xs font-medium text-gray-900 dark:text-gray-100">{inq.nombre}</div>
+                  <div class="text-[11px] text-gray-400 dark:text-gray-500 mt-0.5 sm:hidden">{inq.cuit}</div>
                 </td>
-                <td class="px-4 md:px-5 py-2 text-[13px] text-gray-600 dark:text-gray-400">{inq.dni}</td>
-                <td class="px-4 md:px-5 py-2 text-[13px] text-gray-600 dark:text-gray-400 hidden sm:table-cell">{inq.telefono ?? '-'}</td>
-                <td class="px-4 md:px-5 py-2 text-[13px] text-gray-600 dark:text-gray-400 hidden md:table-cell">{inq.email ?? '-'}</td>
-                <td class="px-4 md:px-5 py-2 text-right">
+                <td class="px-3 md:px-4 py-1 text-xs text-gray-600 dark:text-gray-400">{inq.cuit ?? '-'}</td>
+                <td class="px-3 md:px-4 py-1 text-xs text-gray-600 dark:text-gray-400 hidden sm:table-cell">{inq.iva ?? '-'}</td>
+                <td class="px-3 md:px-4 py-1 text-xs text-gray-600 dark:text-gray-400 hidden sm:table-cell">{inq.telefono ?? '-'}</td>
+                <td class="px-3 md:px-4 py-1 text-xs text-gray-600 dark:text-gray-400 hidden md:table-cell">{inq.email ?? '-'}</td>
+                <td class="px-3 md:px-4 py-1 text-right">
                   {#if isAdmin}
                     <div class="flex items-center justify-end gap-0.5">
                       <button
@@ -295,21 +301,33 @@
 
         <div class="grid grid-cols-2 gap-4">
           <div>
-            <label for="inq-dni" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">DNI *</label>
-            <input id="inq-dni" type="text" bind:value={form.dni} required placeholder="DNI"
+            <label for="inq-cuit" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">CUIT *</label>
+            <input id="inq-cuit" type="text" bind:value={form.cuit} required placeholder="CUIT"
               class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent" />
           </div>
+          <div>
+            <label for="inq-iva" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">IVA</label>
+            <select id="inq-iva" bind:value={form.iva}
+              class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+              <option value="">Seleccionar...</option>
+              <option value="Monotributo">Monotributo</option>
+              <option value="Resp. inscripto">Resp. inscripto</option>
+              <option value="Exento">Exento</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
           <div>
             <label for="inq-telefono" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Telefono</label>
             <input id="inq-telefono" type="text" bind:value={form.telefono} placeholder="Telefono"
               class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent" />
           </div>
-        </div>
-
-        <div>
-          <label for="inq-email" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email</label>
-          <input id="inq-email" type="email" bind:value={form.email} placeholder="email@ejemplo.com"
-            class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent" />
+          <div>
+            <label for="inq-email" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email</label>
+            <input id="inq-email" type="email" bind:value={form.email} placeholder="email@ejemplo.com"
+              class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent" />
+          </div>
         </div>
 
         <div>
@@ -323,7 +341,7 @@
             class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg transition-colors cursor-pointer disabled:opacity-50">
             Cancelar
           </button>
-          <button type="submit" disabled={submitting || !form.nombre || !form.dni}
+          <button type="submit" disabled={submitting || !form.nombre || !form.cuit}
             class="px-4 py-2 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 disabled:bg-primary-400 rounded-lg transition-colors cursor-pointer disabled:cursor-not-allowed">
             {submitting ? 'Guardando...' : editTarget ? 'Actualizar' : 'Crear inquilino'}
           </button>
@@ -352,7 +370,7 @@
         </div>
       </div>
       <p class="text-sm text-gray-700 dark:text-gray-300 mb-6">
-        Seguro que queres eliminar a <strong class="font-medium">{deleteTarget.nombre}</strong> (DNI: {deleteTarget.dni})?
+        Seguro que queres eliminar a <strong class="font-medium">{deleteTarget.nombre}</strong> (CUIT: {deleteTarget.cuit})?
       </p>
       <div class="flex justify-end gap-3">
         <button on:click={cancelDelete} disabled={deleting}

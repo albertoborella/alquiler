@@ -6,7 +6,8 @@ from sqlmodel import SQLModel, Field
 class InquilinoBase(SQLModel):
     """Base inquilino schema."""
     nombre: str = Field(max_length=255)
-    dni: str = Field(max_length=20, unique=True, index=True)
+    cuit: Optional[str] = Field(default=None, max_length=20)
+    iva: Optional[str] = Field(default=None, max_length=50)
     telefono: Optional[str] = Field(default=None, max_length=50)
     email: Optional[str] = Field(default=None, max_length=255)
     direccion: Optional[str] = Field(default=None, max_length=500)
@@ -29,7 +30,8 @@ class InquilinoCreate(InquilinoBase):
 class InquilinoUpdate(SQLModel):
     """Schema for updating an inquilino."""
     nombre: Optional[str] = Field(default=None, max_length=255)
-    dni: Optional[str] = Field(default=None, max_length=20)
+    cuit: Optional[str] = Field(default=None, max_length=20)
+    iva: Optional[str] = Field(default=None, max_length=50)
     telefono: Optional[str] = Field(default=None, max_length=50)
     email: Optional[str] = Field(default=None, max_length=255)
     direccion: Optional[str] = Field(default=None, max_length=500)

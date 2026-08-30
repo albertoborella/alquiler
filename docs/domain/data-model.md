@@ -54,7 +54,8 @@ CREATE TABLE propietarios (
 CREATE TABLE inquilinos (
     id            VARCHAR(36) PRIMARY KEY DEFAULT uuid_generate_v4()::text,
     nombre        VARCHAR(255) NOT NULL,
-    dni           VARCHAR(20)  NOT NULL UNIQUE,
+    cuit          VARCHAR(20),
+    iva           VARCHAR(50),
     telefono      VARCHAR(50),
     email         VARCHAR(255),
     direccion     VARCHAR(500),
@@ -127,6 +128,11 @@ CREATE TABLE contratos (
 
 **Nota:** Los propietarios se obtienen del inmueble a través de `copropiedad`.
 
+**Nota de superficie:** La unidad del campo `inmuebles.superficie` depende de la
+`categoria`: **m²** para inmuebles urbanos y **hectáreas (ha)** para rurales.
+Los campos residenciales (`habitaciones`, `banos`, `dormitorios`, `comodidades`)
+solo aplican a inmuebles urbanos; para rurales se ignoran.
+
 **Constraint de contrato activo:** Solo puede existir un contrato activo por
 inmueble (solapamiento de fechas). Se valida en la capa de aplicación.
 
@@ -189,6 +195,7 @@ CREATE TABLE audit_log (
 | `users.role` | `admin`, `empleado`, `contable` |
 | `inmuebles.categoria` | `urbano`, `rural` |
 | `inmuebles.estado` | `disponible`, `alquilado` |
+| `inquilinos.iva` | `Monotributo`, `Resp. inscripto`, `Exento` |
 | `contratos.modalidad_pago` | `pesos_indice`, `moneda_extranjera`, `producto_agropecuario` |
 | `contratos.frecuencia` | `mensual`, `trimestral`, `anual`, `vencimiento` |
 | `contratos.periodo_indexacion` | `mensual`, `trimestral`, `anual` |

@@ -30,7 +30,8 @@ CREATE TABLE propietarios (
 CREATE TABLE inquilinos (
     id VARCHAR(36) PRIMARY KEY DEFAULT uuid_generate_v4()::text,
     nombre VARCHAR(255) NOT NULL,
-    dni VARCHAR(20) UNIQUE NOT NULL,
+    cuit VARCHAR(20),
+    iva VARCHAR(50),
     telefono VARCHAR(50),
     email VARCHAR(255),
     direccion VARCHAR(500),
@@ -132,7 +133,7 @@ CREATE TABLE audit_log (
 CREATE INDEX idx_users_email ON users(email);
 CREATE INDEX idx_users_role ON users(role);
 CREATE INDEX idx_propietarios_dni_cuit ON propietarios(dni_cuit);
-CREATE INDEX idx_inquilinos_dni ON inquilinos(dni);
+CREATE INDEX idx_inquilinos_cuit ON inquilinos(cuit);
 CREATE INDEX idx_inmuebles_estado ON inmuebles(estado);
 CREATE INDEX idx_inmuebles_categoria ON inmuebles(categoria);
 CREATE INDEX idx_inmuebles_direccion ON inmuebles(direccion);

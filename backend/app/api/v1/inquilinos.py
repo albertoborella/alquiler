@@ -6,7 +6,7 @@ from app.db.session import get_db
 from app.models.inquilino import InquilinoCreate, InquilinoUpdate, InquilinoPublic
 from app.crud.inquilino import (
     get_inquilino,
-    get_inquilino_by_dni,
+    get_inquilino_by_cuit,
     get_inquilinos,
     create_inquilino,
     update_inquilino,
@@ -48,12 +48,12 @@ async def create_new_inquilino(
     current_user = Depends(get_current_active_user)
 ):
     """Create a new inquilino."""
-    # Check if DNI already exists
-    existing = await get_inquilino_by_dni(db, inquilino_in.dni)
+    # Check if CUIT already exists
+    existing = await get_inquilino_by_cuit(db, inquilino_in.cuit)
     if existing:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="DNI already registered"
+            detail="CUIT already registered"
         )
     return await create_inquilino(db, inquilino_in)
 

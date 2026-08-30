@@ -46,9 +46,29 @@ export interface ContratoDash {
 export interface InquilinoDash {
   id: string;
   nombre: string;
-  dni: string;
+  cuit: string | null;
+  iva: string | null;
   telefono: string | null;
   email: string | null;
+}
+
+export interface Propietario {
+  id: string;
+  nombre: string;
+  dni_cuit: string;
+  telefono: string | null;
+  email: string | null;
+  direccion: string | null;
+  created_at: string | null;
+  updated_at: string | null;
+}
+
+export interface PropietarioCreateData {
+  nombre: string;
+  dni_cuit: string;
+  telefono?: string;
+  email?: string;
+  direccion?: string;
 }
 
 export interface InmuebleDashboard {
@@ -95,7 +115,8 @@ export interface InmueblePublic {
 export interface InquilinoPublic {
   id: string;
   nombre: string;
-  dni: string;
+  cuit: string | null;
+  iva: string | null;
   telefono: string | null;
   email: string | null;
   direccion: string | null;
@@ -220,6 +241,15 @@ export const api = {
       dormitorios?: number;
       comodidades?: string;
       descripcion?: string;
+      propietarios?: Array<{
+        propietario_id?: string;
+        porcentaje_participacion: number;
+        nombre?: string;
+        dni_cuit?: string;
+        telefono?: string;
+        email?: string;
+        direccion?: string;
+      }>;
     }
   ): Promise<InmueblePublic> {
     const res = await fetch(`${API_URL}/inmuebles/`, {
@@ -329,7 +359,8 @@ export const api = {
     token: string,
     data: {
       nombre: string;
-      dni: string;
+      cuit: string;
+      iva?: string;
       telefono?: string;
       email?: string;
       direccion?: string;
@@ -355,7 +386,8 @@ export const api = {
     id: string,
     data: {
       nombre?: string;
-      dni?: string;
+      cuit?: string;
+      iva?: string;
       telefono?: string;
       email?: string;
       direccion?: string;
@@ -428,6 +460,30 @@ export const api = {
       headers: { 'X-Access-Token': token },
     });
     if (!res.ok) throw new Error('Error al obtener propietarios');
+    return res.json();
+  },
+
+  async getPropietarios(token: string): Promise<Propietario[]> {
+    const res = await fetch(`${API_URL}/propietarios/`, {
+      headers: { 'X-Access-Token': token },
+    });
+    if (!res.ok) throw new Error('Error al obtener propietarios');
+    return res.json();
+  },
+
+  async createPropietario(token: string, data: PropietarioCreateData): Promise<Propietario> {
+    const res = await fetch(`${API_URL}/propietarios/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Access-Token': token,
+      },
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || 'Error al crear propietario');
+    }
     return res.json();
   },
 };

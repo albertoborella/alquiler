@@ -11,9 +11,9 @@ async def get_inquilino(db: AsyncSession, inquilino_id: str) -> Optional[Inquili
     return await db.get(Inquilino, inquilino_id)
 
 
-async def get_inquilino_by_dni(db: AsyncSession, dni: str) -> Optional[Inquilino]:
-    """Get an inquilino by DNI."""
-    statement = select(Inquilino).where(Inquilino.dni == dni)
+async def get_inquilino_by_cuit(db: AsyncSession, cuit: str) -> Optional[Inquilino]:
+    """Get an inquilino by CUIT."""
+    statement = select(Inquilino).where(Inquilino.cuit == cuit)
     result = await db.execute(statement)
     return result.scalars().first()
 
@@ -36,7 +36,8 @@ async def create_inquilino(db: AsyncSession, inquilino_in: InquilinoCreate) -> I
     inquilino = Inquilino(
         id=inquilino_id,
         nombre=inquilino_in.nombre,
-        dni=inquilino_in.dni,
+        cuit=inquilino_in.cuit,
+        iva=inquilino_in.iva,
         telefono=inquilino_in.telefono,
         email=inquilino_in.email,
         direccion=inquilino_in.direccion,

@@ -41,6 +41,28 @@
 - **Edicion**: modificar datos del inmueble.
 - **Listado**: ver todos los inmuebles con tag de estado.
 
+### FR-04a: Vistas separadas por categoria (urbano / rural)
+- Los inmuebles se gestionan en **dos vistas/tablas separadas** segun su categoria:
+  - **Inmuebles urbanos** en `/inmuebles`.
+  - **Inmuebles rurales** en `/inmuebles/rural`.
+- Ambas se alcanzan desde el **sidebar** ("Inmuebles urbanos" e "Inmuebles rurales").
+- Tras el **login**, la aplicacion redirige siempre a la vista de **inmuebles urbanos** (`/inmuebles`).
+- Cada vista filtra los inmuebles por su categoria correspondiente y conserva su propio filtro de estado.
+- El modal de **nuevo inmueble** no permite elegir la categoria: esta queda **fija segun la vista** desde la que se abre (urbano al crear desde la tabla urbana, rural desde la rural).
+
+### FR-04b: Campos segun categoria (urbano vs rural)
+- **Urbano**: direccion, superficie en **m²**, habitaciones, banos, dormitorios, comodidades, descripcion.
+- **Rural**: solo direccion, superficie en **hectareas (ha)**, descripcion. **No** se usan habitaciones/banos/dormitorios/comodidades.
+- La unidad de superficie (m² vs ha) se interpreta segun la categoria del inmueble.
+
+### FR-04c: Asignacion de propietarios al crear inmueble
+- Al crear un inmueble (urbano o rural), el modal permite **asignar uno o mas propietarios** con su **porcentaje de participacion** en la misma operacion.
+- Cada propietario puede:
+  - **Seleccionarse** de la lista de propietarios existentes, o
+  - **Crearse al vuelo** (nombre, DNI/CUIT y datos opcionales) dentro del mismo modal.
+- Si el DNI/CUIT del propietario nuevo ya existe, se reutiliza el existente.
+- Se exige al menos un propietario; la suma de participaciones **deberia ser 100%** (se muestra una advertencia no bloqueante si no lo es).
+
 ### FR-05: Panel de Inmueble
 - Al seleccionar un inmueble, mostrar:
   - Datos completos (direccion, superficie, habitaciones, banos, dormitorios, comodidades).
@@ -103,16 +125,17 @@
 - Asignar uno o varios propietarios a un inmueble con porcentaje de participacion.
 - La suma de participaciones debe ser 100%.
 - Modificar participacion porcentual (incluso con contrato vigente, segun BR-04).
+- Al **crear** un inmueble se asignan los propietarios y sus porcentajes en la misma operacion (seleccionando existentes o creando nuevos), de forma atomica en el backend.
 
 ---
 
 ## Gestion de Inquilinos
 
 ### FR-08: CRUD de Inquilinos
-- **Alta**: registrar inquilino con nombre, DNI, telefono, email, direccion.
+- **Alta**: registrar inquilino con nombre, CUIT, IVA (Monotributo, Resp. inscripto o Exento), telefono, email, direccion. El CUIT es obligatorio.
 - **Baja**: eliminar inquilino (solo si cumple BR-01).
-- **Edicion**: modificar datos del inquilino.
-- **Listado**: tabla con todos los inquilinos (nombre, DNI, telefono, email).
+- **Edicion**: modificar datos del inquilino (el CUIT sigue siendo obligatorio).
+- **Listado**: tabla con todos los inquilinos (nombre, CUIT, IVA, telefono, email).
 - Acceso desde el **Sidebar** en la seccion "Inquilinos".
 - Solo el **Administrador** puede crear, editar y eliminar inquilinos.
 - El usuario **Empleado** solo ve la tabla (solo lectura).
@@ -211,7 +234,10 @@
 - El sidebar se oculta en pantallas chicas (`< md`) y se muestra via hamburger menu.
 - Las tablas usan scroll horizontal en mobile con columnas ocultas progresivamente (Inquilino, Monto, Vencimiento se ocultan en pantallas chicas).
 - Los filtros y botones se apilan en mobile.
-- Sidebar mas angosto (`w-44` / 11rem) para maximizar espacio de contenido.
+- El sidebar es colapsable/expandible desde un toggle (icono) en la barra de navegacion y desde el pie del sidebar.
+- Sidebar mas angosto (`w-36` / 9rem) y con tipografia menor y sin negrita.
+- Cuando el sidebar se oculta (colapsa), la tabla/contenido se expande al ancho disponible de la pantalla.
+- Tablas con tipografia mas pequena y renglones mas estrechos en todas las vistas de listado (inmuebles, inquilinos, usuarios, dashboard).
 
 ---
 

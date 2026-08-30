@@ -7,11 +7,11 @@
 | `id` | VARCHAR(36) | sí | Identificador único (UUID como texto) |
 | `direccion` | string | sí | Dirección o ubicación del inmueble |
 | `categoria` | enum | sí | `urbano` \| `rural` |
-| `superficie` | decimal | no | Superficie en m² |
-| `habitaciones` | int | no | Cantidad de habitaciones |
-| `banos` | int | no | Cantidad de baños |
-| `dormitorios` | int | no | Cantidad de dormitorios |
-| `comodidades` | text | no | Lista de comodidades |
+| `superficie` | decimal | no | Superficie; unidad según categoría (**m²** urbano / **ha** rural) |
+| `habitaciones` | int | no | Cantidad de habitaciones (solo urbano) |
+| `banos` | int | no | Cantidad de baños (solo urbano) |
+| `dormitorios` | int | no | Cantidad de dormitorios (solo urbano) |
+| `comodidades` | text | no | Lista de comodidades (solo urbano) |
 | `descripcion` | text | no | Descripción libre del inmueble |
 | `estado` | enum | sí | `disponible` \| `alquilado` (almacenado, se actualiza con triggers) |
 
@@ -45,6 +45,10 @@ de un inmueble debe ser exactamente 100.00. Se valida en la capa de aplicación.
 **Restricción UNIQUE:** Un propietario no puede tener dos registros de
 participación en el mismo inmueble.
 
+**Asignación al crear:** Al dar de alta un inmueble se pueden asignar sus
+propietarios y porcentajes en la misma operación (existentes o creados al vuelo),
+de forma atómica en el backend.
+
 ---
 
 ## Inquilino
@@ -53,7 +57,8 @@ participación en el mismo inmueble.
 | -------- | ---- | ----------- | ----------- |
 | `id` | VARCHAR(36) | sí | Identificador único (UUID como texto) |
 | `nombre` | string | sí | Nombre completo |
-| `dni` | string | sí | DNI o equivalente |
+| `cuit` | string | sí* | CUIT (obligatorio en la app; nullable en DB para empezar limpio) |
+| `iva` | enum | no | `Monotributo` \| `Resp. inscripto` \| `Exento` |
 | `telefono` | string | no | Teléfono de contacto |
 | `email` | string | no | Correo electrónico de contacto |
 | `direccion` | string | no | Dirección personal |

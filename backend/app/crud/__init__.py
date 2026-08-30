@@ -17,7 +17,7 @@ from app.crud.propietario import (
 )
 from app.crud.inquilino import (
     get_inquilino,
-    get_inquilino_by_dni,
+    get_inquilino_by_cuit,
     get_inquilinos,
     create_inquilino,
     update_inquilino,
@@ -66,7 +66,7 @@ __all__ = [
     # Propietario
     "get_propietario", "get_propietario_by_dni_cuit", "get_propietarios", "create_propietario", "update_propietario", "delete_propietario",
     # Inquilino
-    "get_inquilino", "get_inquilino_by_dni", "get_inquilinos", "create_inquilino", "update_inquilino", "delete_inquilino",
+    "get_inquilino", "get_inquilino_by_cuit", "get_inquilinos", "create_inquilino", "update_inquilino", "delete_inquilino",
     # Inmueble
     "get_inmueble", "get_inmuebles", "create_inmueble", "update_inmueble", "delete_inmueble",
     "get_copropiedad_by_inmueble", "add_propietario_to_inmueble", "remove_propietario_from_inmueble",

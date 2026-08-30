@@ -160,3 +160,65 @@ El inmueble, lo pude crear, el contrato me trae el modal pero uno de los campos,
 Pude crear el inquilino pero al querer generar un contrato de alquiler, en el front me sale un alert de error Failed to fetch
 
 Para finalizar la tarea del día de hoy, quisiera que hagas un commit de todo y un push al repositorio
+
+Hola, buen dia. Continuando con el trabajo, quisiera mejorar primeramente lo siguiente, la tipografía de del sidebar quisiera que sea mas pequeña, que no sea en negrita y que eso permita hacer mas angosto el sidebar. Tambien quisiera que el sidebar se pueda que aparezca o se oculte segun el usuario apriete un icono para que el sidebar se oculte o no. A la vez quiero que simultaneamente se agrande el ancho de la tabla al ancho de la pantalla segun el sidebar se muestre o se oculte. Otra modificación sería hacer mas pequeño la tipografia de las tablas y renglones mas estrecho. Por supuesto que acordate que toda modificacion que corresponda con algun cambio en la documentacion, se debe modificar la documentacion.
+
+Bien, ahora quisiera hacer una modificacion que seguramente tendemos que modificar el backend tambien. Cuando voy a crear un nuevo inmueble se abre el modal con los datos que se solicitan, pero necesito alguna modificacion que paso a explicar. Un inmueble tiene un propietario o mas y cuando son mas de uno pueden serlo en distinto porcentaje de participacion. También al crear un inmueble hay un select para determinar si es urbano o rural. Si es urbano está bien, pero si es rural, la superficie del inmueble es en hectareas y no en metros cuadrados. Ademas el inmueble rural no se tiene en cuenta habitaciones, dormitorios, comodidades, baños. El inmueble rural solo mantendría direccion, superficie (en hectareas) y tambien le dejaría el campo descripción para hacer alguna aclaracion. Dejo a tu criterio lo siguiente: quizas convenga que sean dos tablas de inmuebles donde a travez del menu en el sidebar se pueda optar por inmuebles rurales o urbanos. Que luego del logueo, la redirección sea siempre a Inmuebles urbanos, y la tabla de inmuebles rurales tenga solo los campos que te digo, Direccion, Propietario o Copropietarios, % de participacion, si es un solo propietario sería 100% y sino lo que corresponda a cada uno, ese porcentaje debería indicarse cuando se crea el inmueble, Superficie, Moroso, y todos los iconos con su funcionalidad como en la tabla de Inmuebles Urbanos. Pero dejo abierta la posibilidad de resolverlo de otra manera según creas mas conveniente.
+
+Se ve bien pero tengo basicamente dos inconvenientes, creo que no sería necesario tener el select de urbano o rural en el modal de creacion de inmuebles, ya que se crean desde el boton que está en la tabla de Inmuebles Rurales o Inmuebles Urbanos. Te recuerdo que ahora trabajamos con dos tablas, y si es necesario que esté el campo en el modal no seria un select y lo traería ya lleno, segun la tabla de la que se genera el nuevo inmueble. El otro inconveniente que veo es que los campos de los dos modales no se pueden escribir.
+
+El modal de creacion de inmuebles rurales no se ha modificado como te indique anteriormente. O no se ve el cambio en el modal y tabla.
+
+He realizado el refresh con Ctrl + F5 y tambien Crtl + Shift + R pero sigo sin ver los cambios en el modal de creacion de inmuebles rurales, y tampoco el campo fijo al crear inmuebles urbanos, se sigue viendo el select.
+
+Ahora, el select ya no esta en el model, solo el campo fijo segun sea urbano o rural pero el resto de los campos del modal para creacion nuevo rural no se han modificado, sigue igual a los datos de creacion de los urbanos.
+
+Te confirmo, que luego de haber realizado el refresh, ejecutado la aplicacion en una pagina de incognito, al crear un inmueble rural el campo fijo (ex select) sigue indicando Urbano, y los campos siguen siendo los de creacion de Urbanos. No se como pasarte la imagen.
+
+El error de consola es el siguiente: client:495 [vite] connecting...
+client:618 [vite] connected.
+client.js?v=80062d6f:3441 <Layout> was created with unknown prop 'params'
+warn @ client.js?v=80062d6f:3441
+client.js?v=80062d6f:3441 <Page> was created with unknown prop 'params'
+warn @ client.js?v=80062d6f:3441
+client.js?v=80062d6f:3441 <Page> was created with unknown prop 'params'
+warn @ client.js?v=80062d6f:3441
+:3000/login:1 [DOM] Input elements should have autocomplete attributes (suggested: "current-password"): (More info: https://goo.gl/9p2vKq) null
+client.js?v=80062d6f:3441 <Page> was created with unknown prop 'params'
+warn @ client.js?v=80062d6f:3441
+client.js?v=80062d6f:3441 <Page> was created with unknown prop 'params'
+warn @ client.js?v=80062d6f:3441
+client.js?v=80062d6f:3441 <Page> was created with unknown prop 'params'
+warn @ client.js?v=80062d6f:3441
+client.js?v=80062d6f:3441 <Page> was created with unknown prop 'params'
+warn @ client.js?v=80062d6f:3441
+client.js?v=80062d6f:3441 <Page> was created with unknown prop 'params'
+warn @ client.js?v=80062d6f:3441
+client.js?v=80062d6f:3441 <Page> was created with unknown prop 'params'
+warn @ client.js?v=80062d6f:3441
+Y la url de creacion de inmuebles rurales es la siguiente, http://localhost:3000/inmuebles/rural
+
+Perfecto, ahora se ve todo bien. Algunas cosas que veo es que en el sidebar, a medido que se cambia de pagina del sidebar se debería ir resaltando los distintos items, y dejar de resatar donde estaba. En cuanto a inquilinos, quisiera cambiar el campo DNI por otro que sea CUIT, y agregar otro campo que sea IVA con un desplegable que indique, Monotributo, Resp. inscripto, Exento. Todo ese cambio se vea reflejado en la creacio de nuevo inquilino y en la tabla de inquilinos.
+
+Se presenta todo bastante bien pero no puedo crear el inmueble porque al querer crear el propietario, al guardar no se guarda y indica un fallo. Paso el siguiente error en consola.
+client:495 [vite] connecting...
+client:618 [vite] connected.
+client.js?v=80062d6f:3441 <Layout> was created with unknown prop 'params'
+warn @ client.js?v=80062d6f:3441
+client.js?v=80062d6f:3441 <Error> was created with unknown prop 'params'
+warn @ client.js?v=80062d6f:3441
+client.js?v=80062d6f:3441 <Page> was created with unknown prop 'params'
+warn @ client.js?v=80062d6f:3441
+:8000/api/users:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
+:8000/api/users?role=admin:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
+client.js?v=80062d6f:3441 <Page> was created with unknown prop 'params'
+warn @ client.js?v=80062d6f:3441
+:3000/login:1 [DOM] Input elements should have autocomplete attributes (suggested: "current-password"): (More info: https://goo.gl/9p2vKq) null
+client.js?v=80062d6f:3441 <Page> was created with unknown prop 'params'
+warn @ client.js?v=80062d6f:3441
+client.js?v=80062d6f:3441 <Page> was created with unknown prop 'params'
+warn @ client.js?v=80062d6f:3441
+:8000/api/inmuebles/:1  Failed to load resource: the server responded with a status of 400 (Bad Request)
+:8000/api/inmuebles/:1  Failed to load resource: the server responded with a status of 400 (Bad Request)
+
+Ok. esto ahora funciona, luego seguiré revisando cada una de las funcionalidades, pero antes de dejar el trabajo momentaneamente quisiera hacer un commit y pushearlo al repositorio.
