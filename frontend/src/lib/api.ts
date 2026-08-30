@@ -29,6 +29,8 @@ export interface PropietarioDash {
 
 export interface ContratoDash {
   id: string;
+  inmueble_id: string;
+  inquilino_id: string;
   fecha_inicio: string;
   fecha_fin: string;
   fecha_maxima_pago: number;
@@ -41,6 +43,7 @@ export interface ContratoDash {
   tipo_producto: string | null;
   kilos: number | null;
   precio_kilo: number | null;
+  activo: boolean;
 }
 
 export interface InquilinoDash {
@@ -267,6 +270,36 @@ export const api = {
     return res.json();
   },
 
+  async updateInmueble(
+    token: string,
+    id: string,
+    data: {
+      direccion?: string;
+      categoria?: string;
+      superficie?: number;
+      habitaciones?: number;
+      banos?: number;
+      dormitorios?: number;
+      comodidades?: string;
+      descripcion?: string;
+      estado?: string;
+    }
+  ): Promise<InmueblePublic> {
+    const res = await fetch(`${API_URL}/inmuebles/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Access-Token': token,
+      },
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || 'Error al actualizar inmueble');
+    }
+    return res.json();
+  },
+
   // ── Users CRUD (admin) ──────────────────────────────────
 
   async updateUser(
@@ -301,6 +334,64 @@ export const api = {
   },
 
   // ── Contratos ──────────────────────────────────────────
+
+  async getContratos(
+    token: string,
+    filters: { activo?: boolean } = {}
+  ): Promise<ContratoDash[]> {
+    const params = new URLSearchParams();
+    if (filters.activo !== undefined) params.set('activo', String(filters.activo));
+    const qs = params.toString();
+    const url = `${API_URL}/contratos${qs ? '?' + qs : ''}`;
+    const res = await fetch(url, {
+      headers: { 'X-Access-Token': token },
+    });
+    if (!res.ok) throw new Error('Error al obtener contratos');
+    return res.json();
+  },
+
+  async updateContrato(
+    token: string,
+    id: string,
+    data: {
+      fecha_inicio?: string;
+      fecha_fin?: string;
+      fecha_maxima_pago?: number;
+      modalidad_pago?: string;
+      frecuencia?: string;
+      monto_base?: number;
+      moneda?: string;
+      indice?: string;
+      periodo_indexacion?: string;
+      tipo_producto?: string;
+      kilos?: number;
+      precio_kilo?: number;
+      fuente_precio_agro?: string;
+      activo?: boolean;
+    }
+  ): Promise<ContratoDash> {
+    const res = await fetch(`${API_URL}/contratos/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Access-Token': token,
+      },
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || 'Error al actualizar contrato');
+    }
+    return res.json();
+  },
+
+  async deleteContrato(token: string, id: string): Promise<void> {
+    const res = await fetch(`${API_URL}/contratos/${id}`, {
+      method: 'DELETE',
+      headers: { 'X-Access-Token': token },
+    });
+    if (!res.ok) throw new Error('Error al eliminar contrato');
+  },
 
   async getContratosByInmueble(token: string, inmuebleId: string): Promise<ContratoDash[]> {
     const res = await fetch(`${API_URL}/contratos/inmueble/${inmuebleId}`, {
@@ -453,6 +544,30 @@ export const api = {
     return res.json();
   },
 
+  async getCobros(
+    token: string,
+    filters: { fecha_inicio?: string; fecha_fin?: string } = {}
+  ): Promise<CobroPublic[]> {
+    const params = new URLSearchParams();
+    if (filters.fecha_inicio) params.set('fecha_inicio', filters.fecha_inicio);
+    if (filters.fecha_fin) params.set('fecha_fin', filters.fecha_fin);
+    const qs = params.toString();
+    const url = `${API_URL}/cobros${qs ? '?' + qs : ''}`;
+    const res = await fetch(url, {
+      headers: { 'X-Access-Token': token },
+    });
+    if (!res.ok) throw new Error('Error al obtener cobros');
+    return res.json();
+  },
+
+  async deleteCobro(token: string, id: string): Promise<void> {
+    const res = await fetch(`${API_URL}/cobros/${id}`, {
+      method: 'DELETE',
+      headers: { 'X-Access-Token': token },
+    });
+    if (!res.ok) throw new Error('Error al eliminar cobro');
+  },
+
   // ── Propietarios ───────────────────────────────────────
 
   async getPropietariosByInmueble(token: string, inmuebleId: string): Promise<PropietarioDash[]> {
@@ -485,5 +600,33 @@ export const api = {
       throw new Error(err.detail || 'Error al crear propietario');
     }
     return res.json();
+  },
+
+  async updatePropietario(
+    token: string,
+    id: string,
+    data: { nombre?: string; dni_cuit?: string; telefono?: string; email?: string; direccion?: string }
+  ): Promise<Propietario> {
+    const res = await fetch(`${API_URL}/propietarios/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Access-Token': token,
+      },
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || 'Error al actualizar propietario');
+    }
+    return res.json();
+  },
+
+  async deletePropietario(token: string, id: string): Promise<void> {
+    const res = await fetch(`${API_URL}/propietarios/${id}`, {
+      method: 'DELETE',
+      headers: { 'X-Access-Token': token },
+    });
+    if (!res.ok) throw new Error('Error al eliminar propietario');
   },
 };

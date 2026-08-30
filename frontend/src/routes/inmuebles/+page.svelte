@@ -5,6 +5,7 @@
   import { api } from '$lib/api';
   import type { InmuebleDashboard, CobroPublic, InquilinoPublic } from '$lib/api';
   import NuevoInmuebleModal from '$lib/components/NuevoInmuebleModal.svelte';
+  import EditarInmuebleModal from '$lib/components/EditarInmuebleModal.svelte';
 
   let inmuebles: InmuebleDashboard[] = [];
   let loading = true;
@@ -64,6 +65,10 @@
 
   // ── Nuevo Inmueble modal ──
   let showNuevoInmuebleModal = false;
+
+  // ── Editar Inmueble modal ──
+  let showEditarInmuebleModal = false;
+  let editarInmuebleTarget: InmuebleDashboard | null = null;
 
   $: isAdmin = $auth.user?.role === 'admin';
   $: isRural = contratoTarget?.categoria === 'rural';
@@ -326,7 +331,7 @@
 
 <div class="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-6 md:py-8">
   <div class="mb-6 md:mb-8">
-    <h1 class="text-xl md:text-2xl font-bold text-gray-900 dark:text-gray-100">Inmuebles</h1>
+        <h1 class="text-xl md:text-2xl font-bold text-gray-900 dark:text-gray-100">Inmuebles Urbanos</h1>
     <p class="text-gray-500 dark:text-gray-400 mt-1">Gestión de propiedades</p>
   </div>
 
@@ -533,15 +538,15 @@
                       {/if}
 
                       <!-- Editar inmueble -->
-                      <a
-                        href="/inmuebles/{inm.id}/editar"
-                        class="p-1.5 rounded-md text-gray-400 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors"
+                      <button
+                        on:click={() => { editarInmuebleTarget = inm; showEditarInmuebleModal = true; }}
+                        class="p-1.5 rounded-md text-gray-400 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors cursor-pointer"
                         title="Editar inmueble"
                       >
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                         </svg>
-                      </a>
+                      </button>
 
                       <!-- Eliminar inmueble -->
                       <button
@@ -616,6 +621,12 @@
         <div>
           <h3 class="text-base font-semibold text-gray-900 dark:text-gray-100">Registrar cobro</h3>
           <p class="text-sm text-gray-500 dark:text-gray-400">{cobroTarget.direccion}</p>
+          {#if cobroTarget.propietarios && cobroTarget.propietarios.length > 0}
+            <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
+              Propietario{cobroTarget.propietarios.length > 1 ? 's' : ''}:
+              {cobroTarget.propietarios.map((p) => p.nombre).join(', ')}
+            </p>
+          {/if}
         </div>
       </div>
 
@@ -955,4 +966,14 @@
   defaultCategoria="urbano"
   onClose={cerrarNuevoInmueble}
   onCreated={handleInmuebleCreated}
+/>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- EDITAR INMUEBLE MODAL                                       -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<EditarInmuebleModal
+  open={showEditarInmuebleModal}
+  inmueble={editarInmuebleTarget}
+  onClose={() => { showEditarInmuebleModal = false; editarInmuebleTarget = null; }}
+  onUpdated={loadInmuebles}
 />
