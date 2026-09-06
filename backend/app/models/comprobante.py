@@ -4,13 +4,13 @@ from sqlmodel import SQLModel, Field, Relationship
 
 if TYPE_CHECKING:
     from app.models.cobro import Cobro
-    from app.models.propietario import Propietario
+    from app.models.persona import Persona
 
 
 class ComprobanteBase(SQLModel):
     """Base comprobante schema."""
     cobro_id: str = Field(foreign_key="cobros.id", max_length=36)
-    propietario_id: str = Field(foreign_key="propietarios.id", max_length=36)
+    propietario_id: str = Field(foreign_key="personas.id", max_length=36)
     tipo: str = Field(default="comprobante", max_length=50)  # expensas, honorarios, comprobante
     numero: Optional[str] = Field(default=None, max_length=50)
     descripcion: Optional[str] = Field(default=None, max_length=1000)
@@ -27,7 +27,7 @@ class Comprobante(ComprobanteBase, table=True):
     
     # Relationships
     cobro: Optional["Cobro"] = Relationship(sa_relationship_kwargs={"lazy": "select"})
-    propietario: Optional["Propietario"] = Relationship(sa_relationship_kwargs={"lazy": "select"})
+    propietario: Optional["Persona"] = Relationship(sa_relationship_kwargs={"lazy": "select"})
 
 
 class ComprobanteCreate(ComprobanteBase):

@@ -1,6 +1,6 @@
+from app.models.configuracion import Configuracion, ConfiguracionUpdate
 from app.models.user import User, UserCreate, UserUpdate, UserPublic
-from app.models.propietario import Propietario, PropietarioCreate, PropietarioUpdate, PropietarioPublic
-from app.models.inquilino import Inquilino, InquilinoCreate, InquilinoUpdate, InquilinoPublic
+from app.models.persona import Persona, PersonaCreate, PersonaUpdate, PersonaPublic
 from app.models.inmueble import Inmueble, InmuebleCreate, InmuebleUpdate, InmueblePublic
 from app.models.copropiedad import Copropiedad, CopropiedadCreate, CopropiedadPublic
 from app.models.contrato import Contrato, ContratoCreate, ContratoUpdate, ContratoPublic
@@ -11,10 +11,8 @@ from app.models.audit import AuditLog, AuditLogCreate, AuditLogPublic
 __all__ = [
     # User
     "User", "UserCreate", "UserUpdate", "UserPublic",
-    # Propietario
-    "Propietario", "PropietarioCreate", "PropietarioUpdate", "PropietarioPublic",
-    # Inquilino
-    "Inquilino", "InquilinoCreate", "InquilinoUpdate", "InquilinoPublic",
+    # Persona
+    "Persona", "PersonaCreate", "PersonaUpdate", "PersonaPublic",
     # Inmueble
     "Inmueble", "InmuebleCreate", "InmuebleUpdate", "InmueblePublic",
     # Copropiedad
@@ -27,4 +25,6 @@ __all__ = [
     "Comprobante", "ComprobanteCreate", "ComprobanteUpdate", "ComprobantePublic",
     # Audit
     "AuditLog", "AuditLogCreate", "AuditLogPublic",
+    # Configuracion
+    "Configuracion", "ConfiguracionUpdate",
 ]

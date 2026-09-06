@@ -14,27 +14,16 @@ CREATE TABLE users (
     updated_at TIMESTAMP WITH TIME ZONE
 );
 
--- Propietarios table
-CREATE TABLE propietarios (
+-- Personas table (unified propietarios + inquilinos)
+CREATE TABLE personas (
     id VARCHAR(36) PRIMARY KEY DEFAULT uuid_generate_v4()::text,
     nombre VARCHAR(255) NOT NULL,
-    dni_cuit VARCHAR(20) UNIQUE NOT NULL,
-    telefono VARCHAR(50),
-    email VARCHAR(255),
-    direccion VARCHAR(500),
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE
-);
-
--- Inquilinos table
-CREATE TABLE inquilinos (
-    id VARCHAR(36) PRIMARY KEY DEFAULT uuid_generate_v4()::text,
-    nombre VARCHAR(255) NOT NULL,
-    cuit VARCHAR(20),
+    cuit VARCHAR(20) UNIQUE NOT NULL,
     iva VARCHAR(50),
     telefono VARCHAR(50),
     email VARCHAR(255),
     direccion VARCHAR(500),
+    rol VARCHAR(20) NOT NULL DEFAULT 'propietario',  -- propietario, inquilino, ambos
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE
 );
@@ -55,10 +44,10 @@ CREATE TABLE inmuebles (
     updated_at TIMESTAMP WITH TIME ZONE
 );
 
--- Copropiedad table (Propietarios-Inmuebles)
+-- Copropiedad table (Personas-Inmuebles)
 CREATE TABLE copropiedad (
     id VARCHAR(36) PRIMARY KEY DEFAULT uuid_generate_v4()::text,
-    propietario_id VARCHAR(36) NOT NULL REFERENCES propietarios(id) ON DELETE RESTRICT,
+    propietario_id VARCHAR(36) NOT NULL REFERENCES personas(id) ON DELETE RESTRICT,
     inmueble_id VARCHAR(36) NOT NULL REFERENCES inmuebles(id) ON DELETE RESTRICT,
     porcentaje_participacion DECIMAL(5,2) NOT NULL DEFAULT 100.00,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
@@ -69,7 +58,7 @@ CREATE TABLE copropiedad (
 CREATE TABLE contratos (
     id VARCHAR(36) PRIMARY KEY DEFAULT uuid_generate_v4()::text,
     inmueble_id VARCHAR(36) NOT NULL REFERENCES inmuebles(id) ON DELETE RESTRICT,
-    inquilino_id VARCHAR(36) NOT NULL REFERENCES inquilinos(id) ON DELETE RESTRICT,
+    inquilino_id VARCHAR(36) NOT NULL REFERENCES personas(id) ON DELETE RESTRICT,
     fecha_inicio DATE NOT NULL,
     fecha_fin DATE NOT NULL,
     fecha_maxima_pago INTEGER NOT NULL DEFAULT 10,
@@ -108,7 +97,7 @@ CREATE TABLE cobros (
 CREATE TABLE comprobantes (
     id VARCHAR(36) PRIMARY KEY DEFAULT uuid_generate_v4()::text,
     cobro_id VARCHAR(36) NOT NULL REFERENCES cobros(id) ON DELETE RESTRICT,
-    propietario_id VARCHAR(36) NOT NULL REFERENCES propietarios(id) ON DELETE RESTRICT,
+    propietario_id VARCHAR(36) NOT NULL REFERENCES personas(id) ON DELETE RESTRICT,
     tipo VARCHAR(15) NOT NULL DEFAULT 'comprobante',
     numero VARCHAR(50),
     descripcion TEXT,
@@ -132,8 +121,8 @@ CREATE TABLE audit_log (
 -- Create indexes
 CREATE INDEX idx_users_email ON users(email);
 CREATE INDEX idx_users_role ON users(role);
-CREATE INDEX idx_propietarios_dni_cuit ON propietarios(dni_cuit);
-CREATE INDEX idx_inquilinos_cuit ON inquilinos(cuit);
+CREATE INDEX idx_personas_cuit ON personas(cuit);
+CREATE INDEX idx_personas_rol ON personas(rol);
 CREATE INDEX idx_inmuebles_estado ON inmuebles(estado);
 CREATE INDEX idx_inmuebles_categoria ON inmuebles(categoria);
 CREATE INDEX idx_inmuebles_direccion ON inmuebles(direccion);
@@ -165,13 +154,8 @@ CREATE TRIGGER update_users_updated_at
     FOR EACH ROW
     EXECUTE FUNCTION update_updated_at_column();
 
-CREATE TRIGGER update_propietarios_updated_at
-    BEFORE UPDATE ON propietarios
-    FOR EACH ROW
-    EXECUTE FUNCTION update_updated_at_column();
-
-CREATE TRIGGER update_inquilinos_updated_at
-    BEFORE UPDATE ON inquilinos
+CREATE TRIGGER update_personas_updated_at
+    BEFORE UPDATE ON personas
     FOR EACH ROW
     EXECUTE FUNCTION update_updated_at_column();
 

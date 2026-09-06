@@ -1,7 +1,8 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
   import { auth } from '$lib/stores/auth';
   import { api } from '$lib/api';
-  import type { Propietario } from '$lib/api';
+  import type { Persona } from '$lib/api';
 
   export let open = false;
   export let defaultCategoria: 'urbano' | 'rural' = 'urbano';
@@ -15,7 +16,7 @@
     porcentaje: string;
     // new fields
     nombre: string;
-    dni_cuit: string;
+    cuit: string;
     telefono: string;
     email: string;
     direccion: string;
@@ -32,7 +33,7 @@
     descripcion: '',
   };
 
-  let propietarios: Propietario[] = [];
+  let propietarios: Persona[] = [];
   let propietariosLoading = false;
   let rows: PropietarioRow[] = [];
   let nextKey = 1;
@@ -46,6 +47,15 @@
   // urban/rural field set is always correct, regardless of modal open timing.
   $: if (defaultCategoria) form.categoria = defaultCategoria;
 
+  // Load propietarios eagerly so the select is populated the first time the
+  // modal opens (and every subsequent time).  `onMount` fires once when the
+  // component is first rendered — well before the user can click "Nuevo
+  // inmueble".  The `$auth.token` guard ensures we don't fire an unauthenticated
+  // request.
+  onMount(() => {
+    if ($auth.token && propietarios.length === 0) loadPropietarios();
+  });
+
   $: totalPorcentaje = rows.reduce((acc, r) => acc + (parseFloat(r.porcentaje) || 0), 0);
   $: showTotalWarning = rows.length > 1 && totalPorcentaje !== 100;
 
@@ -54,7 +64,8 @@
   let previousOpen = false;
   $: if (open && !previousOpen) {
     resetForm();
-    if (propietarios.length === 0) loadPropietarios();
+    // Always (re)load propietarios so freshly-created ones appear immediately.
+    loadPropietarios();
   }
   $: previousOpen = open;
 
@@ -81,7 +92,7 @@
       propietario_id: '',
       porcentaje: porcentaje === '' ? '' : String(porcentaje),
       nombre: '',
-      dni_cuit: '',
+      cuit: '',
       telefono: '',
       email: '',
       direccion: '',
@@ -112,15 +123,7 @@
   }
 
   function setModo(clave: number, modo: 'existente' | 'nuevo') {
-    rows = rows.map((r) => (r.clave === clave ? { ...r, modo, propietario_id: '', nombre: '', dni_cuit: '' } : r));
-  }
-
-  function setPropietario(clave: number, id: string) {
-    rows = rows.map((r) => (r.clave === clave ? { ...r, propietario_id: id } : r));
-  }
-
-  function onSelectPropietario(e: Event, clave: number) {
-    setPropietario(clave, (e.currentTarget as HTMLSelectElement).value);
+    rows = rows.map((r) => (r.clave === clave ? { ...r, modo, propietario_id: '', nombre: '', cuit: '' } : r));
   }
 
   function setField(clave: number, field: keyof PropietarioRow, value: string) {
@@ -138,7 +141,7 @@
     success = '';
     try {
       const validRows = rows.filter(
-        (r) => (r.modo === 'existente' ? r.propietario_id : r.nombre && r.dni_cuit)
+        (r) => (r.modo === 'existente' ? r.propietario_id : r.nombre && r.cuit)
       );
       if (validRows.length === 0) {
         error = 'Debés agregar al menos un propietario';
@@ -153,7 +156,7 @@
         };
         if (r.modo === 'nuevo') {
           base.nombre = r.nombre;
-          base.dni_cuit = r.dni_cuit;
+          base.cuit = r.cuit;
           if (r.telefono) base.telefono = r.telefono;
           if (r.email) base.email = r.email;
           if (r.direccion) base.direccion = r.direccion;
@@ -326,20 +329,19 @@
 
                 {#if row.modo === 'existente'}
                   <select
-                    value={row.propietario_id}
-                    on:change={(e) => onSelectPropietario(e, row.clave)}
+                    bind:value={row.propietario_id}
                     required
                     class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent">
                     <option value="">Seleccionar propietario...</option>
                     {#each propietarios as p}
-                      <option value={p.id}>{p.nombre} ({p.dni_cuit})</option>
+                      <option value={p.id}>{p.nombre} ({p.cuit})</option>
                     {/each}
                   </select>
                 {:else}
                   <div class="grid grid-cols-2 gap-2">
                     <input type="text" placeholder="Nombre *" bind:value={row.nombre}
                       class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent" />
-                    <input type="text" placeholder="DNI/CUIT *" bind:value={row.dni_cuit}
+                    <input type="text" placeholder="CUIT *" bind:value={row.cuit}
                       class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent" />
                     <input type="text" placeholder="Teléfono" bind:value={row.telefono}
                       class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent" />

@@ -3,7 +3,7 @@
   import { goto } from '$app/navigation';
   import { auth } from '$lib/stores/auth';
   import { api } from '$lib/api';
-  import type { InmuebleDashboard, CobroPublic, InquilinoPublic } from '$lib/api';
+  import type { InmuebleDashboard, CobroPublic, Persona } from '$lib/api';
   import NuevoInmuebleModal from '$lib/components/NuevoInmuebleModal.svelte';
   import EditarInmuebleModal from '$lib/components/EditarInmuebleModal.svelte';
 
@@ -48,6 +48,7 @@
   let contratoForm = {
     fecha_inicio: new Date().toISOString().split('T')[0],
     fecha_fin: '',
+    duracion: '1',
     inquilino_id: '',
     monto_base: '',
     moneda: 'ARS',
@@ -60,7 +61,7 @@
   let contratoSubmitting = false;
   let contratoSuccess = '';
   let contratoError = '';
-  let inquilinos: InquilinoPublic[] = [];
+  let inquilinos: Persona[] = [];
   let inquilinosLoading = false;
 
   // ── Nuevo Inmueble modal ──
@@ -73,6 +74,18 @@
   $: isAdmin = $auth.user?.role === 'admin';
   $: isRural = contratoTarget?.categoria === 'rural';
   $: contratoModalidad = isRural ? 'producto_agropecuario' : (contratoForm.moneda === 'USD' ? 'moneda_extranjera' : 'pesos_indice');
+
+  function calcularFechaFin(fechaInicio: string, duracion: string): string {
+    if (!fechaInicio || !duracion || duracion === 'otros') return contratoForm.fecha_fin;
+    const inicio = new Date(fechaInicio + 'T00:00:00');
+    const anios = parseInt(duracion);
+    inicio.setFullYear(inicio.getFullYear() + anios);
+    return inicio.toISOString().split('T')[0];
+  }
+
+  $: if (contratoForm.duracion && contratoForm.duracion !== 'otros' && contratoForm.fecha_inicio) {
+    contratoForm.fecha_fin = calcularFechaFin(contratoForm.fecha_inicio, contratoForm.duracion);
+  }
 
   onMount(() => {
     if (!$auth.token) {
@@ -219,6 +232,7 @@
     contratoForm = {
       fecha_inicio: new Date().toISOString().split('T')[0],
       fecha_fin: '',
+      duracion: '1',
       inquilino_id: '',
       monto_base: '',
       moneda: 'ARS',
@@ -252,6 +266,10 @@
 
   async function executeContrato() {
     if (!contratoTarget || !$auth.token) return;
+    if (!contratoForm.fecha_fin) {
+      contratoError = 'Seleccioná la duración del contrato';
+      return;
+    }
     contratoSubmitting = true;
     contratoError = '';
     contratoSuccess = '';
@@ -422,11 +440,11 @@
               {/if}
             </tr>
           </thead>
-          <tbody class="divide-y divide-gray-50 dark:divide-gray-800">
+          <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
             {#each inmuebles as inm (inm.id)}
               <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
                 <td class="px-3 md:px-4 py-1">
-                  <div class="text-xs font-medium text-gray-900 dark:text-gray-100">{inm.direccion}</div>
+                  <div class="text-xs text-gray-900 dark:text-gray-100">{inm.direccion}</div>
                   <div class="text-[11px] text-gray-400 dark:text-gray-500 mt-0.5 sm:hidden">
                     {inm.categoria}{inm.superficie ? ` · ${inm.superficie} m²` : ''}
                   </div>
@@ -774,7 +792,7 @@
         <div class="overflow-x-auto max-h-80 overflow-y-auto">
           <table class="w-full">
             <thead>
-              <tr class="text-left text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider border-b border-gray-100 dark:border-gray-800">
+            <tr class="text-left text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/50">
                 <th class="px-3 py-2">Fecha</th>
                 <th class="px-3 py-2 text-right">Monto</th>
                 <th class="px-3 py-2">Moneda</th>
@@ -862,10 +880,22 @@
               class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent" />
           </div>
           <div>
-            <label for="contrato-fecha-fin" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Fecha final *</label>
+            <label for="contrato-duracion" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Duración *</label>
+            <select id="contrato-duracion" bind:value={contratoForm.duracion}
+              class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+              <option value="1">1 año</option>
+              <option value="2">2 años</option>
+              <option value="3">3 años</option>
+              <option value="otros">Otros</option>
+            </select>
+          </div>
+          {#if contratoForm.duracion === 'otros'}
+          <div>
+            <label for="contrato-fecha-fin" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Fecha de finalización *</label>
             <input id="contrato-fecha-fin" type="date" bind:value={contratoForm.fecha_fin} required
               class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent" />
           </div>
+          {/if}
         </div>
 
         <!-- Campos urbanos -->

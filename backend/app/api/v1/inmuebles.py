@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Query
+from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List, Optional
 
@@ -15,10 +16,16 @@ from app.crud.inmueble import (
     get_copropiedad_by_inmueble,
     add_propietario_to_inmueble,
     remove_propietario_from_inmueble,
+    replace_copropiedad,
 )
 from app.core.deps import get_current_active_user
 
 router = APIRouter()
+
+
+class CopropiedadUpdateItem(BaseModel):
+    propietario_id: str
+    porcentaje_participacion: float
 
 
 @router.get("/", response_model=List[InmueblePublic])
@@ -144,3 +151,25 @@ async def remove_propietario(
     if not removed:
         raise HTTPException(status_code=404, detail="Copropiedad relationship not found")
     return {"message": "Propietario removed from inmueble successfully"}
+
+
+@router.put("/{inmueble_id}/propietarios", response_model=List[CopropiedadPublic])
+async def replace_propietarios(
+    inmueble_id: str,
+    propietarios_in: List[CopropiedadUpdateItem],
+    db: AsyncSession = Depends(get_db),
+    current_user = Depends(get_current_active_user)
+):
+    """Replace all propietarios (copropiedad) for an inmueble atomically."""
+    inmueble = await get_inmueble(db, inmueble_id)
+    if not inmueble:
+        raise HTTPException(status_code=404, detail="Inmueble not found")
+    try:
+        return await replace_copropiedad(
+            db, inmueble_id, [p.model_dump() for p in propietarios_in]
+        )
+    except Exception as e:
+        import traceback
+        print(f"[replace_propietarios] ERROR: {e}")
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Error reemplazando propietarios: {str(e)}")

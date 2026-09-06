@@ -4,14 +4,14 @@ from sqlmodel import SQLModel, Field, Relationship
 
 if TYPE_CHECKING:
     from app.models.inmueble import Inmueble
-    from app.models.inquilino import Inquilino
+    from app.models.persona import Persona
     from app.models.cobro import Cobro
 
 
 class ContratoBase(SQLModel):
     """Base contrato schema."""
     inmueble_id: str = Field(foreign_key="inmuebles.id", max_length=36)
-    inquilino_id: str = Field(foreign_key="inquilinos.id", max_length=36)
+    inquilino_id: str = Field(foreign_key="personas.id", max_length=36)
     fecha_inicio: date
     fecha_fin: date
     fecha_maxima_pago: int = Field(default=10)
@@ -38,7 +38,7 @@ class Contrato(ContratoBase, table=True):
     
     # Relationships - using string annotations for forward references
     inmueble: Optional["Inmueble"] = Relationship(sa_relationship_kwargs={"lazy": "select"})
-    inquilino: Optional["Inquilino"] = Relationship(sa_relationship_kwargs={"lazy": "select"})
+    inquilino: Optional["Persona"] = Relationship(sa_relationship_kwargs={"lazy": "select"})
     cobros: List["Cobro"] = Relationship(back_populates="contrato", sa_relationship_kwargs={"lazy": "select"})
 
 

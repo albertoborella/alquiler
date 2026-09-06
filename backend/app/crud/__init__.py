@@ -1,3 +1,4 @@
+from app.crud.configuracion import get_config, get_all_config, set_config
 from app.crud.user import (
     get_user,
     get_user_by_email,
@@ -7,21 +8,15 @@ from app.crud.user import (
     delete_user,
     authenticate_user,
 )
-from app.crud.propietario import (
-    get_propietario,
-    get_propietario_by_dni_cuit,
+from app.crud.persona import (
+    get_persona,
+    get_persona_by_cuit,
+    get_personas,
     get_propietarios,
-    create_propietario,
-    update_propietario,
-    delete_propietario,
-)
-from app.crud.inquilino import (
-    get_inquilino,
-    get_inquilino_by_cuit,
     get_inquilinos,
-    create_inquilino,
-    update_inquilino,
-    delete_inquilino,
+    create_persona,
+    update_persona,
+    delete_persona,
 )
 from app.crud.inmueble import (
     get_inmueble,
@@ -63,10 +58,9 @@ from app.crud.comprobante import (
 __all__ = [
     # User
     "get_user", "get_user_by_email", "get_users", "create_user", "update_user", "delete_user", "authenticate_user",
-    # Propietario
-    "get_propietario", "get_propietario_by_dni_cuit", "get_propietarios", "create_propietario", "update_propietario", "delete_propietario",
-    # Inquilino
-    "get_inquilino", "get_inquilino_by_cuit", "get_inquilinos", "create_inquilino", "update_inquilino", "delete_inquilino",
+    # Persona
+    "get_persona", "get_persona_by_cuit", "get_personas", "get_propietarios", "get_inquilinos",
+    "create_persona", "update_persona", "delete_persona",
     # Inmueble
     "get_inmueble", "get_inmuebles", "create_inmueble", "update_inmueble", "delete_inmueble",
     "get_copropiedad_by_inmueble", "add_propietario_to_inmueble", "remove_propietario_from_inmueble",
@@ -78,4 +72,6 @@ __all__ = [
     # Comprobante
     "get_comprobante", "get_comprobantes_by_cobro", "get_comprobantes_by_propietario", "get_comprobantes",
     "create_comprobante", "update_comprobante", "delete_comprobante",
+    # Configuracion
+    "get_config", "get_all_config", "set_config",
 ]

@@ -55,24 +55,44 @@ export interface InquilinoDash {
   email: string | null;
 }
 
-export interface Propietario {
+export interface Persona {
   id: string;
   nombre: string;
-  dni_cuit: string;
+  cuit: string;
+  iva: string | null;
   telefono: string | null;
   email: string | null;
   direccion: string | null;
+  rol: string;
   created_at: string | null;
   updated_at: string | null;
 }
 
-export interface PropietarioCreateData {
+/** @deprecated Use Persona instead */
+export type Propietario = Persona;
+/** @deprecated Use Persona instead */
+export type InquilinoPublic = Persona;
+
+export interface CopropiedadPublic {
+  id: string;
+  propietario_id: string;
+  inmueble_id: string;
+  porcentaje_participacion: number;
+  created_at: string | null;
+}
+
+export interface PersonaCreateData {
   nombre: string;
-  dni_cuit: string;
+  cuit: string;
+  iva?: string;
   telefono?: string;
   email?: string;
   direccion?: string;
+  rol: string;
 }
+
+/** @deprecated Use PersonaCreateData instead */
+export type PropietarioCreateData = PersonaCreateData;
 
 export interface InmuebleDashboard {
   id: string;
@@ -113,16 +133,6 @@ export interface InmueblePublic {
   estado: string;
   created_at: string | null;
   updated_at: string | null;
-}
-
-export interface InquilinoPublic {
-  id: string;
-  nombre: string;
-  cuit: string | null;
-  iva: string | null;
-  telefono: string | null;
-  email: string | null;
-  direccion: string | null;
 }
 
 export interface CobroPublic {
@@ -187,6 +197,24 @@ export const api = {
     return res.json();
   },
 
+  async changePassword(
+    token: string,
+    data: { current_password: string; new_password: string }
+  ): Promise<void> {
+    const res = await fetch(`${API_URL}/change-password`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Access-Token': token,
+      },
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || 'Error al cambiar contraseña');
+    }
+  },
+
   async getDashboardInmuebles(
     token: string,
     filters: DashboardFilters = {}
@@ -205,6 +233,29 @@ export const api = {
     });
     if (!res.ok) throw new Error('Error al cargar inmuebles del dashboard');
     return res.json();
+  },
+
+  // ── Configuracion ──────────────────────────────────────
+
+  async getConfig(): Promise<Record<string, string | null>> {
+    const res = await fetch(`${API_URL}/configuracion`);
+    if (!res.ok) throw new Error('Error loading config');
+    return res.json();
+  },
+
+  async setConfig(token: string, items: Record<string, string | null>): Promise<void> {
+    const res = await fetch(`${API_URL}/configuracion`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Access-Token': token,
+      },
+      body: JSON.stringify({ items }),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || 'Error saving config');
+    }
   },
 
   // ── Inmuebles CRUD ──────────────────────────────────────
@@ -248,7 +299,7 @@ export const api = {
         propietario_id?: string;
         porcentaje_participacion: number;
         nombre?: string;
-        dni_cuit?: string;
+        cuit?: string;
         telefono?: string;
         email?: string;
         direccion?: string;
@@ -436,77 +487,6 @@ export const api = {
     return res.json();
   },
 
-  // ── Inquilinos ─────────────────────────────────────────
-
-  async getInquilinos(token: string): Promise<InquilinoPublic[]> {
-    const res = await fetch(`${API_URL}/inquilinos/`, {
-      headers: { 'X-Access-Token': token },
-    });
-    if (!res.ok) throw new Error('Error al obtener inquilinos');
-    return res.json();
-  },
-
-  async createInquilino(
-    token: string,
-    data: {
-      nombre: string;
-      cuit: string;
-      iva?: string;
-      telefono?: string;
-      email?: string;
-      direccion?: string;
-    }
-  ): Promise<InquilinoPublic> {
-    const res = await fetch(`${API_URL}/inquilinos/`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Access-Token': token,
-      },
-      body: JSON.stringify(data),
-    });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.detail || 'Error al crear inquilino');
-    }
-    return res.json();
-  },
-
-  async updateInquilino(
-    token: string,
-    id: string,
-    data: {
-      nombre?: string;
-      cuit?: string;
-      iva?: string;
-      telefono?: string;
-      email?: string;
-      direccion?: string;
-    }
-  ): Promise<InquilinoPublic> {
-    const res = await fetch(`${API_URL}/inquilinos/${id}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Access-Token': token,
-      },
-      body: JSON.stringify(data),
-    });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.detail || 'Error al actualizar inquilino');
-    }
-    return res.json();
-  },
-
-  async deleteInquilino(token: string, id: string): Promise<void> {
-    const res = await fetch(`${API_URL}/inquilinos/${id}`, {
-      method: 'DELETE',
-      headers: { 'X-Access-Token': token },
-    });
-    if (!res.ok) throw new Error('Error al eliminar inquilino');
-  },
-
   // ── Cobros ─────────────────────────────────────────────
 
   async createCobro(
@@ -578,55 +558,95 @@ export const api = {
     return res.json();
   },
 
-  async getPropietarios(token: string): Promise<Propietario[]> {
-    const res = await fetch(`${API_URL}/propietarios/`, {
+  // ── Personas ──────────────────────────────────────────
+
+  async getPersonas(token: string, filters: { rol?: string } = {}): Promise<Persona[]> {
+    const params = new URLSearchParams();
+    if (filters.rol) params.set('rol', filters.rol);
+    const qs = params.toString();
+    const url = `${API_URL}/personas${qs ? '?' + qs : ''}`;
+    const res = await fetch(url, { headers: { 'X-Access-Token': token } });
+    if (!res.ok) throw new Error('Error al obtener personas');
+    return res.json();
+  },
+
+  async getPropietarios(token: string): Promise<Persona[]> {
+    const res = await fetch(`${API_URL}/personas/propietarios`, {
       headers: { 'X-Access-Token': token },
     });
     if (!res.ok) throw new Error('Error al obtener propietarios');
     return res.json();
   },
 
-  async createPropietario(token: string, data: PropietarioCreateData): Promise<Propietario> {
-    const res = await fetch(`${API_URL}/propietarios/`, {
+  async getInquilinos(token: string): Promise<Persona[]> {
+    const res = await fetch(`${API_URL}/personas/inquilinos`, {
+      headers: { 'X-Access-Token': token },
+    });
+    if (!res.ok) throw new Error('Error al obtener inquilinos');
+    return res.json();
+  },
+
+  async createPersona(token: string, data: PersonaCreateData): Promise<Persona> {
+    const res = await fetch(`${API_URL}/personas/`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Access-Token': token,
-      },
+      headers: { 'Content-Type': 'application/json', 'X-Access-Token': token },
       body: JSON.stringify(data),
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
-      throw new Error(err.detail || 'Error al crear propietario');
+      throw new Error(err.detail || 'Error al crear persona');
     }
     return res.json();
   },
 
-  async updatePropietario(
+  async updatePersona(token: string, id: string, data: Partial<PersonaCreateData>): Promise<Persona> {
+    const res = await fetch(`${API_URL}/personas/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'X-Access-Token': token },
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || 'Error al actualizar persona');
+    }
+    return res.json();
+  },
+
+  async deletePersona(token: string, id: string): Promise<void> {
+    const res = await fetch(`${API_URL}/personas/${id}`, {
+      method: 'DELETE',
+      headers: { 'X-Access-Token': token },
+    });
+    if (!res.ok) throw new Error('Error al eliminar persona');
+  },
+
+  // ── Copropiedad (inmueble ↔ propietario) ─────────────────
+
+  async getCopropietariosByInmueble(token: string, inmuebleId: string): Promise<CopropiedadPublic[]> {
+    const res = await fetch(`${API_URL}/inmuebles/${inmuebleId}/propietarios`, {
+      headers: { 'X-Access-Token': token },
+    });
+    if (!res.ok) throw new Error('Error al obtener copropietarios');
+    return res.json();
+  },
+
+  async updateCopropietarios(
     token: string,
-    id: string,
-    data: { nombre?: string; dni_cuit?: string; telefono?: string; email?: string; direccion?: string }
-  ): Promise<Propietario> {
-    const res = await fetch(`${API_URL}/propietarios/${id}`, {
+    inmuebleId: string,
+    propietarios: Array<{ propietario_id: string; porcentaje_participacion: number }>
+  ): Promise<CopropiedadPublic[]> {
+    const res = await fetch(`${API_URL}/inmuebles/${inmuebleId}/propietarios`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
         'X-Access-Token': token,
       },
-      body: JSON.stringify(data),
+      body: JSON.stringify(propietarios),
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
-      throw new Error(err.detail || 'Error al actualizar propietario');
+      throw new Error(err.detail || 'Error al actualizar propietarios');
     }
     return res.json();
-  },
-
-  async deletePropietario(token: string, id: string): Promise<void> {
-    const res = await fetch(`${API_URL}/propietarios/${id}`, {
-      method: 'DELETE',
-      headers: { 'X-Access-Token': token },
-    });
-    if (!res.ok) throw new Error('Error al eliminar propietario');
   },
 };

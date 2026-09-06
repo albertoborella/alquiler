@@ -4,7 +4,7 @@ from sqlmodel import SQLModel, Field, Relationship
 from app.models.copropiedad import Copropiedad
 
 if TYPE_CHECKING:
-    from app.models.propietario import Propietario
+    from app.models.persona import Persona
     from app.models.contrato import Contrato
 
 
@@ -24,13 +24,13 @@ class InmuebleBase(SQLModel):
 class Inmueble(InmuebleBase, table=True):
     """Inmueble model for database."""
     __tablename__ = "inmuebles"
-    
+
     id: Optional[str] = Field(default=None, primary_key=True, max_length=36)
     created_at: Optional[datetime] = Field(default=None)
     updated_at: Optional[datetime] = Field(default=None)
-    
+
     # Relationships
-    propietarios: List["Propietario"] = Relationship(back_populates="inmuebles", link_model=Copropiedad)
+    propietarios: List["Persona"] = Relationship(back_populates="inmuebles", link_model=Copropiedad)
     contratos: List["Contrato"] = Relationship(back_populates="inmueble")
 
 
@@ -41,11 +41,12 @@ class InmuebleCreate(InmuebleBase):
 
 class InmueblePropietarioIn(SQLModel):
     """A propietario to attach: either an existing one by id, or new owner data to create."""
-    propietario_id: Optional[str] = None       # if set, use existing propietario
+    propietario_id: Optional[str] = None       # if set, use existing persona
     porcentaje_participacion: float = 100.00
-    # fields to create a NEW propietario (used only when propietario_id is None):
+    # fields to create a NEW persona (used only when propietario_id is None):
     nombre: Optional[str] = None
-    dni_cuit: Optional[str] = None
+    cuit: Optional[str] = None
+    iva: Optional[str] = None
     telefono: Optional[str] = None
     email: Optional[str] = None
     direccion: Optional[str] = None
