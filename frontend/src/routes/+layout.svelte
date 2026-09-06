@@ -6,6 +6,75 @@
   import { page } from '$app/stores';
   import { goto } from '$app/navigation';
   import Sidebar from '$lib/components/Sidebar.svelte';
+  import { onMount } from 'svelte';
+  import { browser } from '$app/environment';
+
+  // ── Inactivity timer (30 min) ──
+  const INACTIVITY_TIMEOUT = 30 * 60 * 1000;
+  let inactivityTimer: ReturnType<typeof setTimeout> | null = null;
+
+  function resetInactivityTimer() {
+    if (!browser) return;
+    if (inactivityTimer) clearTimeout(inactivityTimer);
+    if ($auth.token) {
+      inactivityTimer = setTimeout(() => {
+        auth.logout();
+        alert('Se cerró tu sesión por inactividad. Por favor, iniciá sesión nuevamente.');
+        goto('/login');
+      }, INACTIVITY_TIMEOUT);
+    }
+  }
+
+  function handleActivity() {
+    if ($auth.token) resetInactivityTimer();
+  }
+
+  $: if ($auth.token) {
+    resetInactivityTimer();
+  } else if (browser) {
+    if (inactivityTimer) clearTimeout(inactivityTimer);
+  }
+
+  // ── Config ──
+  let nombreApp = 'Alquiler App';
+  let nombreInmobiliaria = '';
+  let fontSizeApp = '20';
+  let fontSizeInmobiliaria = '14';
+
+  async function loadConfig() {
+    if (!browser) return;
+    try {
+      const res = await fetch('http://localhost:8000/api/configuracion', {
+        cache: 'no-store',
+      });
+      if (!res.ok) {
+        console.error('[Config] HTTP error:', res.status);
+        return;
+      }
+      const data = await res.json();
+      console.log('[Config] Loaded:', JSON.stringify(data));
+      nombreApp = data.nombre_aplicacion || 'Alquiler App';
+      nombreInmobiliaria = data.nombre_inmobiliaria || '';
+      fontSizeApp = data.font_size_nombre_app || '20';
+      fontSizeInmobiliaria = data.font_size_nombre_inmobiliaria || '14';
+      console.log('[Config] Applied - nombreApp:', nombreApp, 'fontSize:', fontSizeApp);
+    } catch (e) {
+      console.error('[Config] fetch error:', e);
+    }
+  }
+
+  const activityEvents = ['mousedown', 'keydown', 'scroll', 'touchstart'];
+
+  onMount(() => {
+    loadConfig();
+    activityEvents.forEach(event => document.addEventListener(event, handleActivity, { passive: true }));
+    resetInactivityTimer();
+
+    return () => {
+      activityEvents.forEach(event => document.removeEventListener(event, handleActivity));
+      if (inactivityTimer) clearTimeout(inactivityTimer);
+    };
+  });
 
   let mobileMenuOpen = false;
 
@@ -18,6 +87,7 @@
   }
 
   function logout() {
+    if (inactivityTimer) clearTimeout(inactivityTimer);
     auth.logout();
     goto('/login');
   }
@@ -65,13 +135,14 @@
             <svg class="w-6 h-6 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
             </svg>
-            <span class="text-xl font-bold text-primary-600">Alquiler App</span>
+            <span class="font-poppins font-bold text-primary-600" style="font-size: {fontSizeApp}px">
+              {nombreApp}{#if nombreInmobiliaria} <span style="font-size: {fontSizeInmobiliaria}px; font-weight: 500">- {nombreInmobiliaria}</span>{/if}
+            </span>
           </a>
         </div>
 
         <div class="hidden sm:flex sm:items-center sm:gap-4">
           {#if $auth.token}
-            <!-- Dark mode toggle -->
             <button
               on:click={() => theme.toggle()}
               class="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer"
@@ -79,12 +150,10 @@
               aria-label={$theme === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
             >
               {#if $theme === 'dark'}
-                <!-- Sun icon -->
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
                 </svg>
               {:else}
-                <!-- Moon icon -->
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
                 </svg>
@@ -108,9 +177,6 @@
           {:else}
             <a href="/login" class="text-gray-600 dark:text-gray-400 hover:text-primary-600 px-3 py-2 text-sm font-medium transition-colors">
               Iniciar Sesión
-            </a>
-            <a href="/register" class="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
-              Registrarse
             </a>
           {/if}
         </div>
@@ -173,9 +239,6 @@
           {:else}
             <a href="/login" class="block px-3 py-2 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 text-sm font-medium" on:click={closeMenu}>
               Iniciar Sesión
-            </a>
-            <a href="/register" class="block px-3 py-2 rounded-md bg-primary-600 text-white text-sm font-medium text-center" on:click={closeMenu}>
-              Registrarse
             </a>
           {/if}
         </div>

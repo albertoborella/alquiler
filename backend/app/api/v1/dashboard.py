@@ -7,9 +7,8 @@ from datetime import date
 from app.db.session import get_db
 from app.models.inmueble import Inmueble
 from app.models.copropiedad import Copropiedad
-from app.models.propietario import Propietario
+from app.models.persona import Persona
 from app.models.contrato import Contrato
-from app.models.inquilino import Inquilino
 from app.models.cobro import Cobro
 from app.core.deps import get_current_active_user
 
@@ -63,7 +62,7 @@ async def get_dashboard_inmuebles(
     propietario_ids = list(set(c.propietario_id for c in copropiedades))
     prop_map: dict = {}
     if propietario_ids:
-        prop_stmt = select(Propietario).where(Propietario.id.in_(propietario_ids))
+        prop_stmt = select(Persona).where(Persona.id.in_(propietario_ids))
         prop_result = await db.execute(prop_stmt)
         for p in prop_result.scalars().all():
             prop_map[p.id] = p
@@ -75,7 +74,7 @@ async def get_dashboard_inmuebles(
             {
                 "id": c.propietario_id,
                 "nombre": prop_map[c.propietario_id].nombre if c.propietario_id in prop_map else "Desconocido",
-                "dni_cuit": prop_map[c.propietario_id].dni_cuit if c.propietario_id in propietario_ids else "",
+                "cuit": prop_map[c.propietario_id].cuit if c.propietario_id in prop_map else "",
                 "porcentaje_participacion": c.porcentaje_participacion,
             }
         )
@@ -91,7 +90,7 @@ async def get_dashboard_inmuebles(
     inquilino_ids = list(set(c.inquilino_id for c in contratos))
     inq_map: dict = {}
     if inquilino_ids:
-        inq_stmt = select(Inquilino).where(Inquilino.id.in_(inquilino_ids))
+        inq_stmt = select(Persona).where(Persona.id.in_(inquilino_ids))
         inq_result = await db.execute(inq_stmt)
         for iq in inq_result.scalars().all():
             inq_map[iq.id] = iq

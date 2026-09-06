@@ -253,7 +253,7 @@
       <div class="overflow-x-auto -mx-4 md:mx-0">
         <table class="w-full min-w-[700px]">
           <thead>
-            <tr class="text-left text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider border-b border-gray-100 dark:border-gray-800">
+            <tr class="text-left text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/50">
               <th class="px-3 md:px-4 py-1">Fecha</th>
               <th class="px-3 md:px-4 py-1">Monto</th>
               <th class="px-3 md:px-4 py-1 hidden sm:table-cell">Inmueble</th>
@@ -264,18 +264,18 @@
               {/if}
             </tr>
           </thead>
-          <tbody class="divide-y divide-gray-50 dark:divide-gray-800">
+          <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
             {#each enrichedCobros as c (c.id)}
               <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
-                <td class="px-3 md:px-4 py-2 text-sm text-gray-900 dark:text-gray-100">{formatDate(c.fecha_cobro)}</td>
-                <td class="px-3 md:px-4 py-2 text-sm font-medium text-gray-900 dark:text-gray-100">
+                <td class="px-3 md:px-4 py-1 text-xs text-gray-900 dark:text-gray-100">{formatDate(c.fecha_cobro)}</td>
+                <td class="px-3 md:px-4 py-1 text-xs text-gray-900 dark:text-gray-100">
                   {formatCurrency(c.monto, c.moneda_original)}
                 </td>
-                <td class="px-3 md:px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hidden sm:table-cell">{c.inmuebleDireccion}</td>
-                <td class="px-3 md:px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hidden md:table-cell">{c.propietarioNombre}</td>
-                <td class="px-3 md:px-4 py-2 text-sm text-gray-500 dark:text-gray-400 truncate max-w-[200px]">{c.observaciones || '-'}</td>
+                <td class="px-3 md:px-4 py-1 text-xs text-gray-700 dark:text-gray-300 hidden sm:table-cell">{c.inmuebleDireccion}</td>
+                <td class="px-3 md:px-4 py-1 text-xs text-gray-700 dark:text-gray-300 hidden md:table-cell">{c.propietarioNombre}</td>
+                <td class="px-3 md:px-4 py-1 text-xs text-gray-500 dark:text-gray-400 truncate max-w-[200px]">{c.observaciones || '-'}</td>
                 {#if isAdmin}
-                  <td class="px-3 md:px-4 py-2 text-right">
+                  <td class="px-3 md:px-4 py-1 text-right">
                     <button
                       on:click={() => confirmDelete(c)}
                       class="p-1.5 rounded-md text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors cursor-pointer"

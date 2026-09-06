@@ -21,6 +21,7 @@ export default {
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+        poppins: ['Poppins', 'sans-serif'],
       }
     }
   },

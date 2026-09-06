@@ -3,11 +3,11 @@
   import { goto } from '$app/navigation';
   import { auth } from '$lib/stores/auth';
   import { api } from '$lib/api';
-  import type { ContratoDash, InmueblePublic, InquilinoPublic } from '$lib/api';
+  import type { ContratoDash, InmueblePublic, Persona } from '$lib/api';
 
   let contratos: ContratoDash[] = [];
   let inmuebles: InmueblePublic[] = [];
-  let inquilinos: InquilinoPublic[] = [];
+  let inquilinos: Persona[] = [];
   let loading = true;
   let error = '';
 
@@ -16,9 +16,21 @@
   let filterActivo = '';
 
   let inmuebleMap = new Map<string, InmueblePublic>();
-  let inquilinoMap = new Map<string, InquilinoPublic>();
+  let inquilinoMap = new Map<string, Persona>();
 
   $: isAdmin = $auth.user?.role === 'admin';
+
+  function calcularFechaFinEdit(fechaInicio: string, duracion: string): string {
+    if (!fechaInicio || !duracion || duracion === 'otros') return editForm.fecha_fin;
+    const inicio = new Date(fechaInicio + 'T00:00:00');
+    const anios = parseInt(duracion);
+    inicio.setFullYear(inicio.getFullYear() + anios);
+    return inicio.toISOString().split('T')[0];
+  }
+
+  $: if (editForm.duracion && editForm.duracion !== 'otros' && editForm.fecha_inicio) {
+    editForm.fecha_fin = calcularFechaFinEdit(editForm.fecha_inicio, editForm.duracion);
+  }
 
   // ── Edit modal ──
   let showEditModal = false;
@@ -26,6 +38,7 @@
   let editForm = {
     fecha_inicio: '',
     fecha_fin: '',
+    duracion: '',
     fecha_maxima_pago: '',
     modalidad_pago: '',
     frecuencia: '',
@@ -93,9 +106,20 @@
 
   function openEdit(c: ContratoDash) {
     editTarget = c;
+    let duracionInferida = '';
+    if (c.fecha_inicio && c.fecha_fin) {
+      const inicio = new Date(c.fecha_inicio + 'T00:00:00');
+      const fin = new Date(c.fecha_fin + 'T00:00:00');
+      const diffYears = Math.round((fin.getTime() - inicio.getTime()) / (365.25 * 24 * 60 * 60 * 1000));
+      if (diffYears === 1) duracionInferida = '1';
+      else if (diffYears === 2) duracionInferida = '2';
+      else if (diffYears === 3) duracionInferida = '3';
+      else duracionInferida = 'otros';
+    }
     editForm = {
       fecha_inicio: c.fecha_inicio,
       fecha_fin: c.fecha_fin,
+      duracion: duracionInferida,
       fecha_maxima_pago: String(c.fecha_maxima_pago),
       modalidad_pago: c.modalidad_pago,
       frecuencia: c.frecuencia,
@@ -273,7 +297,7 @@
       <div class="overflow-x-auto -mx-4 md:mx-0">
         <table class="w-full min-w-[800px]">
           <thead>
-            <tr class="text-left text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider border-b border-gray-100 dark:border-gray-800">
+            <tr class="text-left text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/50">
               <th class="px-3 md:px-4 py-1">Inmueble</th>
               <th class="px-3 md:px-4 py-1 hidden sm:table-cell">Inquilino</th>
               <th class="px-3 md:px-4 py-1">Inicio</th>
@@ -287,27 +311,27 @@
               {/if}
             </tr>
           </thead>
-          <tbody class="divide-y divide-gray-50 dark:divide-gray-800">
+          <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
             {#each filteredContratos as c (c.id)}
               <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
-                <td class="px-3 md:px-4 py-2 text-sm font-medium text-gray-900 dark:text-gray-100">
+                <td class="px-3 md:px-4 py-1 text-xs text-gray-900 dark:text-gray-100">
                   {inmuebleMap.get(c.inmueble_id)?.direccion || c.inmueble_id.slice(0, 8)}
                 </td>
-                <td class="px-3 md:px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hidden sm:table-cell">
+                <td class="px-3 md:px-4 py-1 text-xs text-gray-700 dark:text-gray-300 hidden sm:table-cell">
                   {inquilinoMap.get(c.inquilino_id)?.nombre || c.inquilino_id.slice(0, 8)}
                 </td>
-                <td class="px-3 md:px-4 py-2 text-sm text-gray-700 dark:text-gray-300">{formatDate(c.fecha_inicio)}</td>
-                <td class="px-3 md:px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hidden sm:table-cell">{formatDate(c.fecha_fin)}</td>
-                <td class="px-3 md:px-4 py-2 text-sm text-gray-900 dark:text-gray-100 hidden md:table-cell">
+                <td class="px-3 md:px-4 py-1 text-xs text-gray-700 dark:text-gray-300">{formatDate(c.fecha_inicio)}</td>
+                <td class="px-3 md:px-4 py-1 text-xs text-gray-700 dark:text-gray-300 hidden sm:table-cell">{formatDate(c.fecha_fin)}</td>
+                <td class="px-3 md:px-4 py-1 text-xs text-gray-900 dark:text-gray-100 hidden md:table-cell">
                   {formatCurrency(c.monto_base, c.moneda)}
                 </td>
-                <td class="px-3 md:px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hidden md:table-cell">
+                <td class="px-3 md:px-4 py-1 text-xs text-gray-700 dark:text-gray-300 hidden md:table-cell">
                   {modalidadLabel(c.modalidad_pago)}
                 </td>
-                <td class="px-3 md:px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hidden lg:table-cell">
+                <td class="px-3 md:px-4 py-1 text-xs text-gray-700 dark:text-gray-300 hidden lg:table-cell">
                   {frecuenciaLabel(c.frecuencia)}
                 </td>
-                <td class="px-3 md:px-4 py-2">
+                <td class="px-3 md:px-4 py-1">
                   {#if c.activo}
                     <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200">
                       Activo
@@ -319,7 +343,7 @@
                   {/if}
                 </td>
                 {#if isAdmin}
-                  <td class="px-3 md:px-4 py-2 text-right">
+                  <td class="px-3 md:px-4 py-1 text-right">
                     <div class="flex items-center justify-end gap-1">
                       <button
                         on:click={() => openEdit(c)}
@@ -380,11 +404,22 @@
       {/if}
 
       <form on:submit|preventDefault={submitEdit} class="space-y-4">
-        <div class="grid grid-cols-2 gap-4">
+        <div class="grid grid-cols-3 gap-4">
           <div>
             <label for="ed-fecha-inicio" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Fecha inicio *</label>
             <input id="ed-fecha-inicio" type="date" bind:value={editForm.fecha_inicio} required
               class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent" />
+          </div>
+          <div>
+            <label for="ed-duracion" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Duración</label>
+            <select id="ed-duracion" bind:value={editForm.duracion}
+              class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+              <option value="">Seleccionar...</option>
+              <option value="1">1 año</option>
+              <option value="2">2 años</option>
+              <option value="3">3 años</option>
+              <option value="otros">Otros</option>
+            </select>
           </div>
           <div>
             <label for="ed-fecha-fin" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Fecha fin *</label>

@@ -222,3 +222,457 @@ warn @ client.js?v=80062d6f:3441
 :8000/api/inmuebles/:1  Failed to load resource: the server responded with a status of 400 (Bad Request)
 
 Ok. esto ahora funciona, luego seguiré revisando cada una de las funcionalidades, pero antes de dejar el trabajo momentaneamente quisiera hacer un commit y pushearlo al repositorio.
+
+Mira, cuando un inmueble cualquiera que fue creado y está disponible, al alquilarse, se crea un contrato. Al crearse el contrato el tag en la tabla debe cambiar de disponible a alquilado. También al estar alquilado, no se puede volver a crear el contrato mientras esté alquilado. El icono quedaría desabiltado. Para hacer un cambio en el contrato antes de su vencimiento, se debería, solo con login de administrador poder editar y modificar.
+
+El icono de editar inmueble en las tablas de inmuebles tanto rurales como urbanos, no tiene funcionalidad y nos redirige a un 404 Not Found. El titulo de la tabla de inmuebles urbanos debe decir Inmuebles Urbanos.
+
+Falta armar la tabla de propietarios, que se accede desde el sidebar con el endpoint get /propietarios
+Falta armar una tabla de cobros que se llegue desde el sidebar cobros con el endpoint get /cobros que ya está realizado. esa tabla que trae todos los cobros de todos los alquileres debe tener un filtro por propietario, por inmueble y otro filtro de cobros entre dos fechas.
+Falta armar una tabla de contratos que se llame desde el sidebar, contratos que lleva al endpoint get /contratos que ya está realizado. Deberia tener un filtro que filtre todos los contratos de un determinado inmueble.
+
+Cuando por algun motivo un usuario deja de estar logueado, el mismo debe desaparecer del navbar, lo que nos indica que no hay nadie logueado y que se debe loguear. Ademas quisiera que en la tabla cobros que tiene la columna tambien de Propietario y Observaciones que se coloque el el propietario del inmueble del cual se hizo el cobro, y si tiene observaciones también. Seguramente debe faltar el propietario en el modal donde se coloquen los datos del cobro. Tambien en la tabla contratos debería haber un icono de editar en cada contrato donde solo el administrados pueda editar el contrato.
+
+En la tabla cobros, aun no coloca el propietario/s del inmueble que fue cobrado ni tampoco las observaciones. 
+
+si me logueo como administrador, debo poder eliminar contratos,cobros y inmuebles rural o urbanos.
+
+perfecto, hace un commit de todo lo realizado y un push al repositorio.
+
+Hola, al crear un inmueble, ya sea urbano o rural, en el modal, cuando voy a colocar el propietario, si tengo ya propietarios cargados, el select no me muestra el listado de propietarios para poder seleccionar.
+
+En el modal para agregar un Nuevo Inmueble, al llegar al campo de propietarios, se puede crear un nuevo propietario o ver los propietarios existentes en el campo select, pero en este utimo caso no veo los propietarios existentes, y los debería ver para poder seleccionarlo.
+
+Quisiera que en el sidebar me agregues un item que diga informes, y el icono correspondiente al esconder el sidebar, como en los demas items. Ademas te digo que el error que te pasé recien en que el select de propietarios al crear un inmueble, sigue si aparecer los propietarios que tengo cargados. Y tambien quisiera que al editar el inmueble, se abra el modal con los datos y tambien traiga el o los propietarios y porcentaje para poder editar el porcentaje de participación. Todo esto tanto para inmuebles urbanos y rurales.
+
+Se ha solucionado el select de propietarios, pero no la edicion del inmueble que traiga todos los datos actuales para poder modificar cualquier dato e incluso la participacion de cada propietario. 
+
+Ahora, al editar el inmueble, trae todos los datos pero tengo el inconveniente que al querer guardar luego de editar la modificacion, no se guarda. Queda siempre el modal con los datos, y lo que yo quisiera es que se guarde y vuelva al listado de inmuebles.
+
+Sigue sin guardar los cambios editados en el inmueble. Por favor todas tus respuestas que sean en idioma castellano
+
+Lo siguiente es lo que me tira la consola del navegador
+[EditarInmueble] validRows: 1 
+[{…}]
+EditarInmuebleModal.svelte:185 [EditarInmueble] updateInmueble payload: 
+{direccion: 'Perú 345 - Santa Fe', superficie: 85, habitaciones: 4, banos: 1, dormitorios: 2, …}
+EditarInmuebleModal.svelte:187 [EditarInmueble] updateInmueble OK: 
+{direccion: 'Perú 345 - Santa Fe', categoria: 'urbano', superficie: 85, habitaciones: 4, banos: 1, …}
+EditarInmuebleModal.svelte:216 [EditarInmueble] updateCopropietarios payload: 
+[{…}]
+inmuebles:1 Access to fetch at 'http://localhost:8000/api/inmuebles/f107aafd-dbd0-46b2-aef4-e5498b359646/propietarios' from origin 'http://localhost:3000' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+api.ts:656 
+ PUT http://localhost:8000/api/inmuebles/f107aafd-dbd0-46b2-aef4-e5498b359646/propietarios net::ERR_FAILED 500 (Internal Server Error)
+EditarInmuebleModal.svelte:226 [EditarInmueble] ERROR en submit: TypeError: Failed to fetch
+    at Object.updateCopropietarios (api.ts:656:23)
+    at HTMLFormElement.submit (EditarInmuebleModal.svelte:217:17)
+
+Hola, mirá, quisiera hacer algunas mejoras y me gustaría que comenzar por la siguiente: tengo actualmente una tabla que es de propietarios y otra de inquilinos, pero me doy cuenta que una misma persona puede ser propietaria de inmuebles y tambien inquilina de otros inmuebles. En ese caso, actualmente lo tendría que cargar como inquilino en un formulario y como propietario en otro, y quisiera tener que cargarlo una sola vez y colocarle si es propietario, inquilino o ambos. Luego si es propietario e inquilino, aparecerá en las dos tablas. Deberias modificar y hacer un solo formulario de ingreso de propietarios e inquilinos con un campo select o check para marcar inquilino, propietario o ambos. y tambien como siempre quiero que documentes todo esto.
+
+lo logico sería unificar el nombre de los campos y llamarlos cuit, es el mismo numero.
+
+debo ejecutar los script 1. Backup y 2. Migrar ? Si es así quiero que los ejecutes vos, y si ya lo hiciste y era para informarme lo que has realizado, lo interprete mal.
+
+Esto pasa cuando quiero levantar el sistema completo:
+aborella@aborella-Aspire-E5-575:~/alquiler$ podman-compose up -d
+podman-compose version: 1.0.6
+['podman', '--version', '']
+using podman version: 4.9.3
+** excluding:  set()
+['podman', 'inspect', '-t', 'image', '-f', '{{.Id}}', 'localhost/alquiler_frontend:latest']
+['podman', 'inspect', '-t', 'image', '-f', '{{.Id}}', 'localhost/alquiler_backend:latest']
+['podman', 'ps', '--filter', 'label=io.podman.compose.project=alquiler', '-a', '--format', '{{ index .Labels "io.podman.compose.config-hash"}}']
+podman volume inspect alquiler_postgres_data || podman volume create alquiler_postgres_data
+['podman', 'volume', 'inspect', 'alquiler_postgres_data']
+['podman', 'network', 'exists', 'alquiler_alquiler-network']
+podman run --name=alquiler-db -d --label io.podman.compose.config-hash=5b300e8b1bac9fbafe903a68bd998208b0598db3b83e0ee7d3c7a3d4af15a1d1 --label io.podman.compose.project=alquiler --label io.podman.compose.version=1.0.6 --label PODMAN_SYSTEMD_UNIT=podman-compose@alquiler.service --label com.docker.compose.project=alquiler --label com.docker.compose.project.working_dir=/home/aborella/alquiler --label com.docker.compose.project.config_files=podman-compose.yml --label com.docker.compose.container-number=1 --label com.docker.compose.service=db -e POSTGRES_DB=alquiler -e POSTGRES_USER=alquiler_user -e POSTGRES_PASSWORD=alquiler_dev_2024 -v alquiler_postgres_data:/var/lib/postgresql/data -v /home/aborella/alquiler/db/init.sql:/docker-entrypoint-initdb.d/init.sql --net alquiler_alquiler-network --network-alias db -p 5432:5432 --healthcheck-command /bin/sh -c 'pg_isready -U alquiler_user -d alquiler' --healthcheck-interval 10s --healthcheck-timeout 5s --healthcheck-retries 5 public.ecr.aws/docker/library/postgres:15-alpine
+Error: creating container storage: the container name "alquiler-db" is already in use by d93988b396a42ac0f75380cc2080e9a62955c6d48f978f8378cc7ea718e8c265. You have to remove that container to be able to reuse that name: that name is already in use, or use --replace to instruct Podman to do so.
+exit code: 125
+podman start alquiler-db
+exit code: 0
+podman volume inspect alquiler_frontend_node_modules || podman volume create alquiler_frontend_node_modules
+['podman', 'volume', 'inspect', 'alquiler_frontend_node_modules']
+['podman', 'network', 'exists', 'alquiler_alquiler-network']
+podman run --name=alquiler-frontend -d --label io.podman.compose.config-hash=5b300e8b1bac9fbafe903a68bd998208b0598db3b83e0ee7d3c7a3d4af15a1d1 --label io.podman.compose.project=alquiler --label io.podman.compose.version=1.0.6 --label PODMAN_SYSTEMD_UNIT=podman-compose@alquiler.service --label com.docker.compose.project=alquiler --label com.docker.compose.project.working_dir=/home/aborella/alquiler --label com.docker.compose.project.config_files=podman-compose.yml --label com.docker.compose.container-number=1 --label com.docker.compose.service=frontend -e PUBLIC_API_URL=http://localhost:8000/api -v /home/aborella/alquiler/frontend/src:/app/src -v /home/aborella/alquiler/frontend/static:/app/static -v /home/aborella/alquiler/frontend/svelte.config.js:/app/svelte.config.js -v /home/aborella/alquiler/frontend/vite.config.ts:/app/vite.config.ts -v /home/aborella/alquiler/frontend/tailwind.config.js:/app/tailwind.config.js -v /home/aborella/alquiler/frontend/postcss.config.js:/app/postcss.config.js -v alquiler_frontend_node_modules:/app/node_modules --net alquiler_alquiler-network --network-alias frontend -p 3000:3000 localhost/alquiler_frontend:latest npm run dev -- --host 0.0.0.0 --port 3000
+Error: creating container storage: the container name "alquiler-frontend" is already in use by 92acad1ee10e9af597485bf015743c01fd0e2bd63627352abb2a43844fd77e97. You have to remove that container to be able to reuse that name: that name is already in use, or use --replace to instruct Podman to do so.
+exit code: 125
+podman start alquiler-frontend
+exit code: 0
+['podman', 'network', 'exists', 'alquiler_alquiler-network']
+podman run --name=alquiler-backend -d --requires=alquiler-db --label io.podman.compose.config-hash=5b300e8b1bac9fbafe903a68bd998208b0598db3b83e0ee7d3c7a3d4af15a1d1 --label io.podman.compose.project=alquiler --label io.podman.compose.version=1.0.6 --label PODMAN_SYSTEMD_UNIT=podman-compose@alquiler.service --label com.docker.compose.project=alquiler --label com.docker.compose.project.working_dir=/home/aborella/alquiler --label com.docker.compose.project.config_files=podman-compose.yml --label com.docker.compose.container-number=1 --label com.docker.compose.service=backend -e DATABASE_URL=postgresql+asyncpg://alquiler_user:alquiler_dev_2024@db:5432/alquiler -e JWT_SECRET_KEY=super-secret-jwt-key-change-in-production -e JWT_REFRESH_SECRET_KEY=super-secret-refresh-key-change-in-production -e CORS_ORIGINS=http://localhost:3000,http://localhost:5173 -e ENVIRONMENT=development -v /home/aborella/alquiler/backend/app:/app/app -v /home/aborella/alquiler/uploads/images:/app/uploads/images --net alquiler_alquiler-network --network-alias backend -p 8000:8000 localhost/alquiler_backend:latest uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+Error: creating container storage: the container name "alquiler-backend" is already in use by ca976745f98baa603f02da65f59f7d37363abcc9271989bf15888a9c1290f998. You have to remove that container to be able to reuse that name: that name is already in use, or use --replace to instruct Podman to do so.
+exit code: 125
+podman start alquiler-backend
+exit code: 0
+aborella@aborella-Aspire-E5-575:~/alquiler$ 
+
+en la tabla personas, no muestra campo iva en los propietarios, ya que antes en el formulario de propietarios no se cargaba ese dato, ahora que hemos unificado los campos dl ingreso tanto de propietarios e inquilinos, quisiera que ese campo se muestre tambien en la tabla cuando se trata de un propietario también.
+
+El siguiente cambio es el siguiente: quiero que el proceso de registro de un nuevo usuario se haga desde el frontend donde se ve la tabla de usuarios, no desde el formulario de login. Por otro lado la tabla usuarios solo la debe ver el rol de administrador, por lo que un nuevo usuario siempre lo creará el administrador y le dará una contraseña para que ese usuario ingrese desde el login y si quiere cambiar la contraseña, a travez del link Olvidaste tu contraseña? que quisiera cambiar por la leyenda Cambiar Contraseña, el usuario pueda cambiarla.
+
+quiero que todas las tablas que muestre el frontend tengan una tipografia del tamaño que tiene en la tabla de inmuebles urbanos, que tambien los datos de la primer columna de todas las tablas que se muestran no sea con tipografía en negrita, y si crees que le podemos hacer otro cambio para que las tablas se muestren mas profesionales y delicadas tratandose de un sistema administrativo de uso en inmobiliarias, tambien me gustaria que me las sugieras y que las muestres.
+
+Otro cambio que quiero implementar es el siguiente: cuando se crea un contrato quisiera modificar el campo "Fecha fin *" por  un campo select que indique la "Duración" del contrato, y que pueda ser 1 año, 2 años, 3 años, otros. cuando se elija "otros" se pueda agregar una fecha manualmente de finalización.
+
+Estoy viendo que rapidamente si se deja la aplicacion sin usar se desloguea automaticamente, pero quisiera dos cosas: que ese deslogueo automatico por inactividad, sea luego de 30 minutos de inactividad del sistema, y cuando se desloguea se indique en pantalla con un alert el deslogueo por inactividad y tambien desaparezca en el navbar quie estaba logueado y vuelva a decir login.
+
+Con los ultimos cambios que realizaste me apareción en la pantalla un error 500 y te paso el error en consola.
+[500] GET /
+ReferenceError: document is not defined
+    at /app/src/routes/+layout.svelte:47:46
+    at Array.forEach (<anonymous>)
+    at /app/src/routes/+layout.svelte:47:20
+    at run (/app/node_modules/svelte/src/runtime/internal/utils.js:41:9)
+    at Array.forEach (<anonymous>)
+    at Module.run_all (/app/node_modules/svelte/src/runtime/internal/utils.js:53:6)
+    at Object.render (/app/node_modules/svelte/src/runtime/internal/ssr.js:143:4)
+    at /app/node_modules/@sveltejs/kit/src/runtime/server/page/render.js:243:40
+    at AsyncLocalStorage.run (node:async_hooks:346:14)
+    at Module.with_request_store (file:///app/node_modules/@sveltejs/kit/src/exports/internal/event.js:77:20)
+
+[500] GET /
+ReferenceError: document is not defined
+    at /app/src/routes/+layout.svelte:47:46
+    at Array.forEach (<anonymous>)
+    at /app/src/routes/+layout.svelte:47:20
+    at run (/app/node_modules/svelte/src/runtime/internal/utils.js:41:9)
+    at Array.forEach (<anonymous>)
+    at Module.run_all (/app/node_modules/svelte/src/runtime/internal/utils.js:53:6)
+    at Object.render (/app/node_modules/svelte/src/runtime/internal/ssr.js:143:4)
+    at /app/node_modules/@sveltejs/kit/src/runtime/server/page/render.js:243:40
+    at AsyncLocalStorage.run (node:async_hooks:346:14)
+    at Module.with_request_store (file:///app/node_modules/@sveltejs/kit/src/exports/internal/event.js:77:20)
+
+[404] GET /favicon.ico
+
+[500] GET /favicon.ico
+ReferenceError: document is not defined
+    at /app/src/routes/+layout.svelte:47:46
+    at Array.forEach (<anonymous>)
+    at /app/src/routes/+layout.svelte:47:20
+    at run (/app/node_modules/svelte/src/runtime/internal/utils.js:41:9)
+    at Array.forEach (<anonymous>)
+    at Module.run_all (/app/node_modules/svelte/src/runtime/internal/utils.js:53:6)
+    at Object.render (/app/node_modules/svelte/src/runtime/internal/ssr.js:143:4)
+    at /app/node_modules/@sveltejs/kit/src/runtime/server/page/render.js:243:40
+    at AsyncLocalStorage.run (node:async_hooks:346:14)
+    at Module.with_request_store (file:///app/node_modules/@sveltejs/kit/src/exports/internal/event.js:77:20)
+
+	otro agregado que quisiera hacer es el siguiente: crear un item en el sidebar y su logo,llamado configuracion. Eso nos debe redidigir a un archivo de configuracion que por ahora escribiremos el nombre de la inmobiliaria. Luego podremos ir agregando otras configuraciones que hagan a la aplicacion mas flexible entre distintas inmobiliarias, etc. En el caso del nombre de la inmobiliaria, se deberia ver en el navbar, a continuación del nombre del sistema Alquiler App - <nombre_inmobiliaria>
+
+	Tengo el siguiente error The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/uvicorn/protocols/http/httptools_impl.py", line 419, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/uvicorn/middleware/proxy_headers.py", line 84, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/fastapi/applications.py", line 1054, in __call__
+    await super().__call__(scope, receive, send)
+  File "/usr/local/lib/python3.11/site-packages/starlette/applications.py", line 123, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/usr/local/lib/python3.11/site-packages/starlette/middleware/errors.py", line 186, in __call__
+    raise exc
+  File "/usr/local/lib/python3.11/site-packages/starlette/middleware/errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "/usr/local/lib/python3.11/site-packages/starlette/middleware/cors.py", line 91, in __call__
+    await self.simple_response(scope, receive, send, request_headers=headers)
+  File "/usr/local/lib/python3.11/site-packages/starlette/middleware/cors.py", line 146, in simple_response
+    await self.app(scope, receive, send)
+  File "/usr/local/lib/python3.11/site-packages/starlette/middleware/exceptions.py", line 62, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 64, in wrapped_app
+    raise exc
+  File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    await app(scope, receive, sender)
+  File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 758, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 778, in app
+    await route.handle(scope, receive, send)
+  File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 299, in handle
+    await self.app(scope, receive, send)
+  File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 79, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 64, in wrapped_app
+    raise exc
+  File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    await app(scope, receive, sender)
+  File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 74, in app
+    response = await func(request)
+               ^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/fastapi/routing.py", line 299, in app
+    raise e
+  File "/usr/local/lib/python3.11/site-packages/fastapi/routing.py", line 294, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/fastapi/routing.py", line 191, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/app/app/api/v1/configuracion.py", line 32, in update_configuracion
+    config = await set_config(db, data.key, data.value)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/app/app/crud/configuracion.py", line 18, in set_config
+    existing = await get_config(db, key)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/app/app/crud/configuracion.py", line 7, in get_config
+    result = await db.execute(select(Configuracion).where(Configuracion.key == key))
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/ext/asyncio/session.py", line 452, in execute
+    result = await greenlet_spawn(
+             ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/util/_concurrency_py3k.py", line 197, in greenlet_spawn
+    result = context.throw(*sys.exc_info())
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 2306, in execute
+    return self._execute_internal(
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 2191, in _execute_internal
+    result: Result[Any] = compile_state_cls.orm_execute_statement(
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/context.py", line 293, in orm_execute_statement
+    result = conn.execute(
+             ^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1408, in execute
+    return meth(
+           ^^^^^
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/sql/elements.py", line 513, in _execute_on_connection
+    return connection._execute_clauseelement(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1630, in _execute_clauseelement
+    ret = self._execute_context(
+          ^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1839, in _execute_context
+    return self._exec_single_context(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1979, in _exec_single_context
+    self._handle_dbapi_exception(
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 2335, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1960, in _exec_single_context
+    self.dialect.do_execute(
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/default.py", line 924, in do_execute
+    cursor.execute(statement, parameters)
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/dialects/postgresql/asyncpg.py", line 572, in execute
+    self._adapt_connection.await_(
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/util/_concurrency_py3k.py", line 127, in await_only
+    return current.driver.switch(awaitable)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/util/_concurrency_py3k.py", line 192, in greenlet_spawn
+    value = await result
+            ^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/dialects/postgresql/asyncpg.py", line 550, in _prepare_and_execute
+    self._handle_exception(error)
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/dialects/postgresql/asyncpg.py", line 501, in _handle_exception
+    self._adapt_connection._handle_exception(error)
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/dialects/postgresql/asyncpg.py", line 789, in _handle_exception
+    raise translated_error from error
+sqlalchemy.exc.ProgrammingError: (sqlalchemy.dialects.postgresql.asyncpg.ProgrammingError) <class 'asyncpg.exceptions.UndefinedTableError'>: relation "configuracion" does not exist
+[SQL: SELECT configuracion.key, configuracion.value 
+FROM configuracion 
+WHERE configuracion.key = $1::VARCHAR]
+[parameters: ('nombre_inmobiliaria',)]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+
+quiero que luego del nombre de la aplicacion Alquiler App dejes un espacio y luego el guión medio horizontal, luego espacio y despues el nombre de la inmobiliaria, como te muestro a continuacion:
+Alquiler App - {nombre_inmobiliaria}
+
+en el archivo de configuracion tambien quiero indicar el nombre de la aplicacion, que actualmente es alquiler app, y tambien quiero colocar en la configuracion tanto en nombre de aplicacion como en nombre de inmobiliaria, el tamaño de la fuente. El tipo de letra, es poppins de Google fonts.
+
+el tamaño de las fuentes que puedo modificar en la configuracion no se refleja en el navbar, y cuando me fijo nuevamente en configuracion estan los tamaños por defecto, lo que demuestra que no se guarda el cambio de tamaños.
+
+No aparece el mensaje verde Configuracion guardada correctamente.
+Aparece un alert que dice [{"type":"string_type","loc":["body","items","font_size_nombre_app"],"msg":"Input should be a valid string","input":18,"url":"https://errors.pydantic.dev/2.6/v/string_type"},{"type":"string_type","loc":["body","items","font_size_nombre_inmobiliaria"],"msg":"Input should be a valid string","input":19,"url":"https://errors.pydantic.dev/2.6/v/string_type"}]
+La consola del navegador indica lo siguiente:
+login:1 [DOM] Input elements should have autocomplete attributes (suggested: "current-password"): (More info: https://goo.gl/9p2vKq) <input id=​"password" type=​"password" class=​"w-full px-4 py-2.5 rounded-lg border border-gray-300 text-sm focus:​outline-none focus:​ring-2 focus:​ring-primary-500 focus:​border-transparent transition" placeholder=​"••••••••" required>​
+client:495 [vite] connecting...
+client:618 [vite] connected.
+client.js?v=1c6ddbea:3441 <Layout> was created with unknown prop 'params'
+warn @ client.js?v=1c6ddbea:3441
+client.js?v=1c6ddbea:3441 <Page> was created with unknown prop 'params'
+warn @ client.js?v=1c6ddbea:3441
++layout.svelte:55 [Config] Loaded: {"nombre_aplicacion":"Mi Alquiler","nombre_inmobiliaria":"Borella","font_size_nombre_app":"26","font_size_nombre_inmobiliaria":"15"}
++layout.svelte:60 [Config] Applied - nombreApp: Mi Alquiler fontSize: 26
++page.svelte:314 <Page> was created with unknown prop 'params'
+warn @ client.js?v=1c6ddbea:3441
+(anonymous) @ +page.svelte:314
+instance @ +page.svelte:314
+init @ chunk-MT4ZBHI2.js?v=1c6ddbea:2139
+constructor @ +page.svelte:76
+createProxiedComponent @ svelte-hooks.js?v=1c6ddbea:341
+ProxyComponent @ proxy.js?v=1c6ddbea:242
+Proxy<+page> @ proxy.js?v=1c6ddbea:349
+construct_svelte_component_dev @ chunk-MT4ZBHI2.js?v=1c6ddbea:2577
+(anonymous) @ root.svelte:48
+update_slot_base @ chunk-MT4ZBHI2.js?v=1c6ddbea:126
+(anonymous) @ +layout.svelte:249
+update @ chunk-MT4ZBHI2.js?v=1c6ddbea:1323
+flush @ chunk-MT4ZBHI2.js?v=1c6ddbea:1290
+Promise.then
+schedule_update @ chunk-MT4ZBHI2.js?v=1c6ddbea:1264
+make_dirty @ chunk-MT4ZBHI2.js?v=1c6ddbea:2108
+(anonymous) @ chunk-MT4ZBHI2.js?v=1c6ddbea:2143
+(anonymous) @ root.svelte:52
+(anonymous) @ proxy.js?v=1c6ddbea:83
+$set @ chunk-MT4ZBHI2.js?v=1c6ddbea:2459
+dest.<computed> @ proxy.js?v=1c6ddbea:46
+navigate @ client.js?v=1c6ddbea:1963
+await in navigate
+_goto @ client.js?v=1c6ddbea:548
+goto @ client.js?v=1c6ddbea:2345
+handleSubmit @ +page.svelte:30
++page.svelte:80 <Page> was created with unknown prop 'params'
+warn @ client.js?v=1c6ddbea:3441
+(anonymous) @ +page.svelte:80
+instance @ +page.svelte:80
+init @ chunk-MT4ZBHI2.js?v=1c6ddbea:2139
+constructor @ +page.svelte:185
+createProxiedComponent @ svelte-hooks.js?v=1c6ddbea:341
+ProxyComponent @ proxy.js?v=1c6ddbea:242
+Proxy<+page> @ proxy.js?v=1c6ddbea:349
+construct_svelte_component_dev @ chunk-MT4ZBHI2.js?v=1c6ddbea:2577
+(anonymous) @ root.svelte:48
+update_slot_base @ chunk-MT4ZBHI2.js?v=1c6ddbea:126
+(anonymous) @ +layout.svelte:249
+update @ chunk-MT4ZBHI2.js?v=1c6ddbea:1323
+flush @ chunk-MT4ZBHI2.js?v=1c6ddbea:1290
+Promise.then
+schedule_update @ chunk-MT4ZBHI2.js?v=1c6ddbea:1264
+make_dirty @ chunk-MT4ZBHI2.js?v=1c6ddbea:2108
+(anonymous) @ chunk-MT4ZBHI2.js?v=1c6ddbea:2143
+(anonymous) @ root.svelte:52
+(anonymous) @ proxy.js?v=1c6ddbea:83
+$set @ chunk-MT4ZBHI2.js?v=1c6ddbea:2459
+dest.<computed> @ proxy.js?v=1c6ddbea:46
+navigate @ client.js?v=1c6ddbea:1963
+await in navigate
+(anonymous) @ client.js?v=1c6ddbea:2813
++page.svelte:55 [ConfigPage] Saving: {"items":{"nombre_aplicacion":"alquiler app","nombre_inmobiliaria":"Inmobiliaria La Casa","font_size_nombre_app":18,"font_size_nombre_inmobiliaria":19}}
++page.svelte:56  PUT http://localhost:8000/api/configuracion 422 (Unprocessable Entity)
+window.fetch @ fetcher.js?v=1c6ddbea:67
+save @ +page.svelte:56
+(anonymous) @ chunk-MT4ZBHI2.js?v=1c6ddbea:472
++page.svelte:65 [ConfigPage] Response status: 422
++page.svelte:68 [ConfigPage] Error body: {detail: Array(2)}
+save @ +page.svelte:68
+await in save
+(anonymous) @ chunk-MT4ZBHI2.js?v=1c6ddbea:472
++page.svelte:77 [ConfigPage] Caught: Error: [{"type":"string_type","loc":["body","items","font_size_nombre_app"],"msg":"Input should be a valid string","input":18,"url":"https://errors.pydantic.dev/2.6/v/string_type"},{"type":"string_type","loc":["body","items","font_size_nombre_inmobiliaria"],"msg":"Input should be a valid string","input":19,"url":"https://errors.pydantic.dev/2.6/v/string_type"}]
+    at HTMLFormElement.save (+page.svelte:69:59)
+save @ +page.svelte:77
+await in save
+(anonymous) @ chunk-MT4ZBHI2.js?v=1c6ddbea:472
++page.svelte:10 <Page> was created with unknown prop 'params'
+warn @ client.js?v=1c6ddbea:3441
+(anonymous) @ +page.svelte:10
+instance @ +page.svelte:10
+init @ chunk-MT4ZBHI2.js?v=1c6ddbea:2139
+constructor @ +page.svelte:10
+createProxiedComponent @ svelte-hooks.js?v=1c6ddbea:341
+ProxyComponent @ proxy.js?v=1c6ddbea:242
+Proxy<+page> @ proxy.js?v=1c6ddbea:349
+construct_svelte_component_dev @ chunk-MT4ZBHI2.js?v=1c6ddbea:2577
+(anonymous) @ root.svelte:48
+update_slot_base @ chunk-MT4ZBHI2.js?v=1c6ddbea:126
+(anonymous) @ +layout.svelte:249
+update @ chunk-MT4ZBHI2.js?v=1c6ddbea:1323
+flush @ chunk-MT4ZBHI2.js?v=1c6ddbea:1290
+Promise.then
+schedule_update @ chunk-MT4ZBHI2.js?v=1c6ddbea:1264
+make_dirty @ chunk-MT4ZBHI2.js?v=1c6ddbea:2108
+(anonymous) @ chunk-MT4ZBHI2.js?v=1c6ddbea:2143
+(anonymous) @ root.svelte:52
+(anonymous) @ proxy.js?v=1c6ddbea:83
+$set @ chunk-MT4ZBHI2.js?v=1c6ddbea:2459
+dest.<computed> @ proxy.js?v=1c6ddbea:46
+navigate @ client.js?v=1c6ddbea:1963
+await in navigate
+(anonymous) @ client.js?v=1c6ddbea:2813
++page.svelte:314 <Page> was created with unknown prop 'params'
+warn @ client.js?v=1c6ddbea:3441
+(anonymous) @ +page.svelte:314
+instance @ +page.svelte:314
+init @ chunk-MT4ZBHI2.js?v=1c6ddbea:2139
+constructor @ +page.svelte:76
+createProxiedComponent @ svelte-hooks.js?v=1c6ddbea:341
+ProxyComponent @ proxy.js?v=1c6ddbea:242
+Proxy<+page> @ proxy.js?v=1c6ddbea:349
+construct_svelte_component_dev @ chunk-MT4ZBHI2.js?v=1c6ddbea:2577
+(anonymous) @ root.svelte:48
+update_slot_base @ chunk-MT4ZBHI2.js?v=1c6ddbea:126
+(anonymous) @ +layout.svelte:249
+update @ chunk-MT4ZBHI2.js?v=1c6ddbea:1323
+flush @ chunk-MT4ZBHI2.js?v=1c6ddbea:1290
+Promise.then
+schedule_update @ chunk-MT4ZBHI2.js?v=1c6ddbea:1264
+make_dirty @ chunk-MT4ZBHI2.js?v=1c6ddbea:2108
+(anonymous) @ chunk-MT4ZBHI2.js?v=1c6ddbea:2143
+(anonymous) @ root.svelte:52
+(anonymous) @ proxy.js?v=1c6ddbea:83
+$set @ chunk-MT4ZBHI2.js?v=1c6ddbea:2459
+dest.<computed> @ proxy.js?v=1c6ddbea:46
+navigate @ client.js?v=1c6ddbea:1963
+await in navigate
+_goto @ client.js?v=1c6ddbea:548
+goto @ client.js?v=1c6ddbea:2345
+(anonymous) @ +page.svelte:8
+run @ chunk-MT4ZBHI2.js?v=1c6ddbea:29
+(anonymous) @ chunk-MT4ZBHI2.js?v=1c6ddbea:2085
+flush @ chunk-MT4ZBHI2.js?v=1c6ddbea:1305
+Promise.then
+schedule_update @ chunk-MT4ZBHI2.js?v=1c6ddbea:1264
+make_dirty @ chunk-MT4ZBHI2.js?v=1c6ddbea:2108
+(anonymous) @ chunk-MT4ZBHI2.js?v=1c6ddbea:2143
+(anonymous) @ root.svelte:52
+(anonymous) @ proxy.js?v=1c6ddbea:83
+$set @ chunk-MT4ZBHI2.js?v=1c6ddbea:2459
+dest.<computed> @ proxy.js?v=1c6ddbea:46
+navigate @ client.js?v=1c6ddbea:1963
+await in navigate
+(anonymous) @ client.js?v=1c6ddbea:2813
++page.svelte:80 <Page> was created with unknown prop 'params'
+warn @ client.js?v=1c6ddbea:3441
+(anonymous) @ +page.svelte:80
+instance @ +page.svelte:80
+init @ chunk-MT4ZBHI2.js?v=1c6ddbea:2139
+constructor @ +page.svelte:185
+createProxiedComponent @ svelte-hooks.js?v=1c6ddbea:341
+ProxyComponent @ proxy.js?v=1c6ddbea:242
+Proxy<+page> @ proxy.js?v=1c6ddbea:349
+construct_svelte_component_dev @ chunk-MT4ZBHI2.js?v=1c6ddbea:2577
+(anonymous) @ root.svelte:48
+update_slot_base @ chunk-MT4ZBHI2.js?v=1c6ddbea:126
+(anonymous) @ +layout.svelte:249
+update @ chunk-MT4ZBHI2.js?v=1c6ddbea:1323
+flush @ chunk-MT4ZBHI2.js?v=1c6ddbea:1290
+Promise.then
+schedule_update @ chunk-MT4ZBHI2.js?v=1c6ddbea:1264
+make_dirty @ chunk-MT4ZBHI2.js?v=1c6ddbea:2108
+(anonymous) @ chunk-MT4ZBHI2.js?v=1c6ddbea:2143
+(anonymous) @ root.svelte:52
+(anonymous) @ proxy.js?v=1c6ddbea:83
+$set @ chunk-MT4ZBHI2.js?v=1c6ddbea:2459
+dest.<computed> @ proxy.js?v=1c6ddbea:46
+navigate @ client.js?v=1c6ddbea:1963
+await in navigate
+(anonymous) @ client.js?v=1c6ddbea:2813
++page.svelte:55 [ConfigPage] Saving: {"items":{"nombre_aplicacion":"alquiler app","nombre_inmobiliaria":"El nombre","font_size_nombre_app":14,"font_size_nombre_inmobiliaria":12}}
++page.svelte:56  PUT http://localhost:8000/api/configuracion 422 (Unprocessable Entity)
+window.fetch @ fetcher.js?v=1c6ddbea:67
+save @ +page.svelte:56
+(anonymous) @ chunk-MT4ZBHI2.js?v=1c6ddbea:472
++page.svelte:65 [ConfigPage] Response status: 422
++page.svelte:68 [ConfigPage] Error body: {detail: Array(2)}
+save @ +page.svelte:68
+await in save
+(anonymous) @ chunk-MT4ZBHI2.js?v=1c6ddbea:472
++page.svelte:77 [ConfigPage] Caught: Error: [{"type":"string_type","loc":["body","items","font_size_nombre_app"],"msg":"Input should be a valid string","input":14,"url":"https://errors.pydantic.dev/2.6/v/string_type"},{"type":"string_type","loc":["body","items","font_size_nombre_inmobiliaria"],"msg":"Input should be a valid string","input":12,"url":"https://errors.pydantic.dev/2.6/v/string_type"}]
+    at HTMLFormElement.save (+page.svelte:69:59)
+save @ +page.svelte:77
+await in save
+(anonymous) @ chunk-MT4ZBHI2.js?v=1c6ddbea:472
+En el Navbar aparece Mi Alquiler - Borella. Eso no es lo que yo configuré 
+
+Ahora si deberiamos hacer un commit y pushear todos los cambios que se han realizado.
+
