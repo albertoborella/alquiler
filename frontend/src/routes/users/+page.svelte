@@ -23,6 +23,18 @@
   let deleteTarget: User | null = null;
   let deleting = false;
 
+  // Create user modal
+  let showCreateModal = false;
+  let createForm = {
+    email: '',
+    password: '',
+    confirmPassword: '',
+    full_name: '',
+    role: 'empleado',
+  };
+  let creating = false;
+  let createError = '';
+
   $: isAdmin = $auth.user?.role === 'admin';
 
   onMount(() => {
@@ -48,6 +60,51 @@
 
   function handleFilterChange() {
     loadUsers();
+  }
+
+  function openCreateModal() {
+    createForm = { email: '', password: '', confirmPassword: '', full_name: '', role: 'empleado' };
+    createError = '';
+    showCreateModal = true;
+  }
+
+  function cancelCreate() {
+    showCreateModal = false;
+    createError = '';
+  }
+
+  async function executeCreate() {
+    if (!$auth.token) return;
+
+    createError = '';
+    if (!createForm.email.trim()) {
+      createError = 'El email es requerido';
+      return;
+    }
+    if (createForm.password.length < 6) {
+      createError = 'La contraseña debe tener al menos 6 caracteres';
+      return;
+    }
+    if (createForm.password !== createForm.confirmPassword) {
+      createError = 'Las contraseñas no coinciden';
+      return;
+    }
+
+    creating = true;
+    try {
+      await api.createUser($auth.token, {
+        email: createForm.email.trim(),
+        password: createForm.password,
+        full_name: createForm.full_name.trim() || undefined,
+        role: createForm.role,
+      });
+      showCreateModal = false;
+      await loadUsers();
+    } catch (err) {
+      createError = err instanceof Error ? err.message : 'Error al crear usuario';
+    } finally {
+      creating = false;
+    }
   }
 
   function confirmDeleteUser(user: User) {
@@ -98,8 +155,23 @@
 
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
   <div class="mb-8">
-    <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">Usuarios</h1>
-    <p class="text-gray-500 dark:text-gray-400 mt-1">Gestión de usuarios del sistema</p>
+    <div class="flex items-center justify-between">
+      <div>
+        <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">Usuarios</h1>
+        <p class="text-gray-500 dark:text-gray-400 mt-1">Gestión de usuarios del sistema</p>
+      </div>
+      {#if isAdmin}
+        <button
+          on:click={openCreateModal}
+          class="inline-flex items-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-medium rounded-lg transition-colors cursor-pointer"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+          </svg>
+          Nuevo usuario
+        </button>
+      {/if}
+    </div>
   </div>
 
   <div class="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800">
@@ -150,7 +222,11 @@
             <p class="text-sm text-amber-700 dark:text-amber-300 font-medium">No hay usuarios cargados</p>
           </div>
           <p class="text-xs text-amber-600 dark:text-amber-400 mt-2">
-            Registrá los primeros usuarios para empezar a gestionar el sistema.
+            {#if isAdmin}
+              Creá el primer usuario haciendo clic en "Nuevo usuario".
+            {:else}
+              Pedile a un administrador que cargue los primeros usuarios.
+            {/if}
           </p>
         </div>
         <svg class="w-16 h-16 text-gray-300 dark:text-gray-600 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -162,7 +238,7 @@
       <div class="overflow-x-auto -mx-4 md:mx-0">
         <table class="w-full min-w-[520px]">
           <thead>
-            <tr class="text-left text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider border-b border-gray-100 dark:border-gray-800">
+            <tr class="text-left text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/50">
               <th class="px-3 md:px-4 py-1">Nombre</th>
               <th class="px-3 md:px-4 py-1 hidden sm:table-cell">Email</th>
               <th class="px-3 md:px-4 py-1">Rol</th>
@@ -173,10 +249,10 @@
               {/if}
             </tr>
           </thead>
-          <tbody class="divide-y divide-gray-50 dark:divide-gray-800">
+          <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
             {#each users as user (user.id)}
               <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
-                <td class="px-3 py-1 text-xs font-medium text-gray-900 dark:text-gray-100">
+                <td class="px-3 py-1 text-xs text-gray-900 dark:text-gray-100">
                   {user.full_name || '-'}
                 </td>
                 <td class="px-3 py-1 text-xs text-gray-600 dark:text-gray-400">
@@ -240,6 +316,124 @@
     {/if}
   </div>
 </div>
+
+<!-- Create user modal -->
+{#if showCreateModal}
+  <div class="fixed inset-0 z-50 flex items-center justify-center">
+    <!-- Backdrop -->
+    <div class="absolute inset-0 bg-black/50" on:click={cancelCreate} role="presentation"></div>
+
+    <!-- Modal -->
+    <div class="relative bg-white dark:bg-gray-900 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 w-full max-w-md mx-4 p-6">
+      <div class="flex items-center gap-3 mb-5">
+        <div class="w-10 h-10 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
+          <svg class="w-5 h-5 text-primary-600 dark:text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+          </svg>
+        </div>
+        <div>
+          <h3 class="text-base font-semibold text-gray-900 dark:text-gray-100">Nuevo usuario</h3>
+          <p class="text-sm text-gray-500 dark:text-gray-400">Creá una cuenta para un nuevo usuario</p>
+        </div>
+      </div>
+
+      {#if createError}
+        <div class="bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 text-sm rounded-lg px-4 py-3 border border-red-100 dark:border-red-900/30 mb-4">
+          {createError}
+        </div>
+      {/if}
+
+      <form on:submit|preventDefault={executeCreate} class="space-y-4">
+        <div>
+          <label for="create-email" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+            Email *
+          </label>
+          <input
+            id="create-email"
+            type="email"
+            bind:value={createForm.email}
+            required
+            class="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition"
+            placeholder="usuario@email.com"
+          />
+        </div>
+
+        <div>
+          <label for="create-name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+            Nombre completo
+          </label>
+          <input
+            id="create-name"
+            type="text"
+            bind:value={createForm.full_name}
+            class="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition"
+            placeholder="Juan Pérez"
+          />
+        </div>
+
+        <div>
+          <label for="create-password" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+            Contraseña *
+          </label>
+          <input
+            id="create-password"
+            type="password"
+            bind:value={createForm.password}
+            required
+            class="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition"
+            placeholder="Mínimo 6 caracteres"
+          />
+        </div>
+
+        <div>
+          <label for="create-confirm" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+            Confirmar contraseña *
+          </label>
+          <input
+            id="create-confirm"
+            type="password"
+            bind:value={createForm.confirmPassword}
+            required
+            class="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition"
+            placeholder="Repetí la contraseña"
+          />
+        </div>
+
+        <div>
+          <label for="create-role" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+            Rol *
+          </label>
+          <select
+            id="create-role"
+            bind:value={createForm.role}
+            class="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition"
+          >
+            <option value="empleado">Empleado</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
+
+        <div class="flex justify-end gap-3 pt-2">
+          <button
+            type="button"
+            on:click={cancelCreate}
+            disabled={creating}
+            class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg transition-colors cursor-pointer disabled:opacity-50"
+          >
+            Cancelar
+          </button>
+          <button
+            type="submit"
+            disabled={creating}
+            class="px-4 py-2 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 disabled:bg-primary-400 rounded-lg transition-colors cursor-pointer disabled:cursor-not-allowed"
+          >
+            {creating ? 'Creando...' : 'Crear usuario'}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+{/if}
 
 <!-- Delete confirmation modal -->
 {#if showDeleteConfirm && deleteTarget}

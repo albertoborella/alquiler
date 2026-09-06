@@ -94,7 +94,7 @@
 
         <div class="text-right">
           <a href="#" class="text-sm text-primary-600 hover:text-primary-700">
-            ¿Olvidaste tu contraseña?
+            Cambiar Contraseña
           </a>
         </div>
 
@@ -107,12 +107,5 @@
         </button>
       </form>
     </div>
-
-    <p class="text-center text-sm text-gray-500 mt-6">
-      ¿No tenés cuenta?
-      <a href="/register" class="text-primary-600 hover:text-primary-700 font-medium">
-        Registrate
-      </a>
-    </p>
   </div>
 </div>
