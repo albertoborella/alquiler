@@ -12,8 +12,12 @@ async def get_cobro(db: AsyncSession, cobro_id: str) -> Optional[Cobro]:
 
 
 async def get_cobros_by_contrato(db: AsyncSession, contrato_id: str) -> List[Cobro]:
-    """Get all cobros for a contrato."""
-    statement = select(Cobro).where(Cobro.contrato_id == contrato_id)
+    """Get all cobros for a contrato, ordered by fecha desc, then created_at desc."""
+    statement = (
+        select(Cobro)
+        .where(Cobro.contrato_id == contrato_id)
+        .order_by(Cobro.fecha_cobro.desc(), Cobro.created_at.desc())
+    )
     result = await db.execute(statement)
     return list(result.scalars().all())
 

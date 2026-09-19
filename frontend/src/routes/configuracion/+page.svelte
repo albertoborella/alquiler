@@ -9,6 +9,8 @@
   let nombreInmobiliaria = '';
   let fontSizeApp = '20';
   let fontSizeInmobiliaria = '14';
+  let costoAdminUrbano = '5';
+  let costoAdminRural = '3';
   let loading = true;
   let saving = false;
   let success = '';
@@ -27,6 +29,8 @@
         nombreInmobiliaria = data.nombre_inmobiliaria || '';
         fontSizeApp = data.font_size_nombre_app || '20';
         fontSizeInmobiliaria = data.font_size_nombre_inmobiliaria || '14';
+        costoAdminUrbano = data.costo_admin_urbano || '5';
+        costoAdminRural = data.costo_admin_rural || '3';
       }
     } catch (e) {
       console.error('Error loading config:', e);
@@ -50,6 +54,8 @@
           nombre_inmobiliaria: nombreInmobiliaria || null,
           font_size_nombre_app: String(fontSizeApp || '20'),
           font_size_nombre_inmobiliaria: String(fontSizeInmobiliaria || '14'),
+          costo_admin_urbano: String(costoAdminUrbano || '5'),
+          costo_admin_rural: String(costoAdminRural || '3'),
         },
       };
       console.log('[ConfigPage] Saving:', JSON.stringify(payload));
@@ -190,6 +196,48 @@
           <p class="text-xs text-gray-500 dark:text-gray-400 mt-3">
             Poppins es la tipografía del sistema. Se aplica en la barra de navegación.
           </p>
+        </div>
+      </div>
+
+      <!-- Costo de administración -->
+      <div class="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800">
+        <div class="px-6 py-4 border-b border-gray-100 dark:border-gray-800">
+          <h2 class="text-sm font-semibold text-gray-900 dark:text-gray-100">Costo de administración</h2>
+        </div>
+        <div class="p-6">
+          <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">
+            Porcentaje que se descuenta del monto cobrado para gastos de administración. Se aplica en cada cobro y se refleja en los informes de propietarios.
+          </p>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label for="costo-admin-urbano" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Urbanos (%)
+              </label>
+              <input
+                id="costo-admin-urbano"
+                type="number"
+                step="0.1"
+                min="0"
+                max="100"
+                bind:value={costoAdminUrbano}
+                class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              />
+            </div>
+            <div>
+              <label for="costo-admin-rural" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Rurales (%)
+              </label>
+              <input
+                id="costo-admin-rural"
+                type="number"
+                step="0.1"
+                min="0"
+                max="100"
+                bind:value={costoAdminRural}
+                class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              />
+            </div>
+          </div>
         </div>
       </div>
 

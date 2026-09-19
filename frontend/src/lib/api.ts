@@ -150,6 +150,76 @@ export interface CobroPublic {
   updated_at: string | null;
 }
 
+export interface CobroInforme {
+  id: string;
+  fecha_cobro: string;
+  monto_bruto: number;
+  porcentaje_participacion: number;
+  porcentaje_admin: number;
+  costo_admin: number;
+  monto_neto: number;
+  inmueble_direccion: string;
+  inmueble_tipo: string;
+  observaciones: string | null;
+}
+
+export interface PropietarioInforme {
+  propietario_id: string;
+  propietario_nombre: string;
+  propietario_cuit: string;
+  cobros: CobroInforme[];
+  total_bruto: number;
+  total_admin: number;
+  total_neto: number;
+}
+
+export interface InformePropietarios {
+  mode: 'general';
+  costo_admin_urbano: number;
+  costo_admin_rural: number;
+  propietarios: PropietarioInforme[];
+}
+
+// ── Pivot mode (inmueble filter) ──────────────────────────
+
+export interface PropietarioPivotColumn {
+  propietario_id: string;
+  nombre: string;
+  cuit: string;
+  porcentaje: number;
+}
+
+export interface MontoPropietario {
+  bruto: number;
+  admin: number;
+  neto: number;
+}
+
+export interface MesInforme {
+  mes_key: string;
+  mes_label: string;
+  prop_montos: Record<string, MontoPropietario>;
+  total_bruto: number;
+  total_admin: number;
+  total_neto: number;
+}
+
+export interface InformePivot {
+  mode: 'pivot';
+  costo_admin_urbano: number;
+  costo_admin_rural: number;
+  propietarios: PropietarioPivotColumn[];
+  meses: MesInforme[];
+  totales: {
+    prop_montos: Record<string, MontoPropietario>;
+    total_bruto: number;
+    total_admin: number;
+    total_neto: number;
+  };
+}
+
+export type InformeResponse = InformePropietarios | InformePivot;
+
 export const api = {
   async login(data: LoginRequest): Promise<LoginResponse> {
     const res = await fetch(`${API_URL}/login`, {
@@ -647,6 +717,25 @@ export const api = {
       const err = await res.json().catch(() => ({}));
       throw new Error(err.detail || 'Error al actualizar propietarios');
     }
+    return res.json();
+  },
+
+  // ── Informes ─────────────────────────────────────────────
+
+  async getInformePropietarios(
+    token: string,
+    params?: { fecha_inicio?: string; fecha_fin?: string; propietario_id?: string; inmueble_id?: string }
+  ): Promise<InformeResponse> {
+    const searchParams = new URLSearchParams();
+    if (params?.fecha_inicio) searchParams.set('fecha_inicio', params.fecha_inicio);
+    if (params?.fecha_fin) searchParams.set('fecha_fin', params.fecha_fin);
+    if (params?.propietario_id) searchParams.set('propietario_id', params.propietario_id);
+    if (params?.inmueble_id) searchParams.set('inmueble_id', params.inmueble_id);
+    const qs = searchParams.toString();
+    const res = await fetch(`${API_URL}/informes/propietarios${qs ? '?' + qs : ''}`, {
+      headers: { 'X-Access-Token': token },
+    });
+    if (!res.ok) throw new Error('Error al obtener informe de propietarios');
     return res.json();
   },
 };

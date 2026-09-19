@@ -676,3 +676,40 @@ En el Navbar aparece Mi Alquiler - Borella. Eso no es lo que yo configuré
 
 Ahora si deberiamos hacer un commit y pushear todos los cambios que se han realizado.
 
+Volvemos al trabajo del desarrollo del sistema. Mirá, estoy viendo que un inmueble que está en estado disponible, al generarse un contrato de alquiler, debe el estado cambiar a alquilado, y de la misma forma al vencerse el contrato debe volver al estado disponible. Ese cambio se debe reflejar en todas las tablas que se vea el estado del inmueble
+
+Mirá, tengo un inmueble urbano que tiene asignado un contrato he inclso se han asignado cobros pero el estado sigue saliendo disponible. Tambien quiero que el estado de igual forma salga en los inmuebles rurales ya qu en este momento no aparece ningun estado 
+
+Mira, han desaparecido los inmuebles cargados en urbanos y rurales.
+
+En la tabla inmuebles rurales e inmuebles urbanos hay un icono por cada inmueble para editar el contrato en el caso que exista. Ese icono está desactivado ya que entrega un 404. Se puede ver el contrato desde el menñu de sidebar en contratos pero me gustaria verlo tambien desde las tablas de inmuebles urbanos y rurales
+
+Ok, ahora se puede editar el contrato y trae todos los datos a exepcion de los inmput Tipo producto, kilos y precio/kilo que vienen vacios. En la edicion de los urbanos viene sin datos los input indice y período indexación.
+
+quisiera realizar un cambio en el modal de cobro de inmuebles rurales, para quien cobra tenga que cargar una menor cantidad de datos. Como en el contrato tenemos la cantidad de producto en kilos, al hacer un cobro solamente con la fecha de cobro que se trae automaticamente y un input donde se coloque el precio por kilo del producto, se debería hacer el calculo y nos muestre el importe que se debe cobrar. te parece bien?
+
+Tambien quisiera simplificar el cobro de inmuebles urbanos, para cargar menos datos. Ese modal nos deberia traer la fecha de cobro en forma automatica, la fecha del dia, el monto según original segun ultimo monto cobrado, y un input opcional para que el mes que se deba indexar segun sea mensual, trimestral, anual, etc se coloque el indice, y entonces por defecto viene el input sin dato pero el mes que se le pone algun valor se hace el calculo automaticamente y se muestra. Luego en los cobros siguientes, se trae ese ultimo importe hasta cuando se vuelva a indexar. se entiende lo que quiero?
+
+Mira, parece que todo anda bien, solo que cuando voy a hacer un proximo cobro no me trae el ultimo monto cobrado luego de haber realizado una indexacion.
+
+Perdon tienes razón, ahora me doy cuenta que el ultimo cobro indexado tenia una fecha de meses anteriores a la fecha mas moderna. Pero me parece bien que el order sea por fecha de cobro y no por created. Se entiende. El error fue mio.
+
+Quisiera agregar la siguiente funcionalidad. En configuraciones agregar costo de administración para urbanos y costo de administracion para rurales, siendo esos datos un porcentual del monto a cobrar. Ejemplo,en urbanos 5% y rurales 3% . Luego cuando se hace el cobro en cobro en el modal o donde creas mas conveniente se debe reflejar el costo de administracion, y cuando luego hagamos los informes, en el informe para propietarios se debe descontar ese costo de administracion en cada mes y el monto a pagar al propietario sería con ese descuento automatico. Me entiendes?
+
+Excelente, solo quisiera que en el caso de los inmuebles que tienen mas de un propietario el importe total se divida en cada propietario según el porcentaje de participacion.
+
+Sería interesante que el informe pueda filtrar tambien por fechas como hasta ahora pero también por inmueble, para que de esa forma si el inmueble tiene mas de un propietario se vea en el período cuanto cobró cad uno de los propietarios cada mes, y tambien cuanto fue el costo de la administracion cada mes, y tambien sería interesante que esas columnas de cobranzas tengan el total del período seleccionado.
+
+Ahora en informes me sale el siguiente error
+[plugin:vite-plugin-svelte] /app/src/routes/informes/+page.svelte:157:30 Expected }
+/app/src/routes/informes/+page.svelte:157:30
+155 |      {#if esPivot}
+ 156 |        <!-- VISTA PIVOT (por inmueble) -->
+ 157 |        {@const pivot = informe as InformePivot}
+                                      ^
+ 158 |  
+ 159 |        {#if pivot.meses.length === 0}
+Click outside, press Esc key, or fix the code to dismiss.
+You can also disable this overlay by setting server.hmr.overlay to false in vite.config.ts.
+
+Todo parece andar bien, quisiera que antes de seguir hagas un commit y pushees al repositorio de gihub

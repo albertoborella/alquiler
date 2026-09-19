@@ -22,15 +22,20 @@
   let cobroTarget: InmuebleDashboard | null = null;
   let cobroForm = {
     fecha_cobro: new Date().toISOString().split('T')[0],
-    monto: '',
-    moneda_original: '',
-    monto_original: '',
-    cotizacion: '',
+    precio_kilo: '',
     observaciones: '',
   };
   let cobroSubmitting = false;
   let cobroSuccess = '';
   let cobroError = '';
+
+  // Cálculo automático: kilos del contrato × precio/kilo
+  $: cobroKilos = cobroTarget?.contrato?.kilos ?? 0;
+  $: cobroMontoCalculado = cobroKilos * (parseFloat(cobroForm.precio_kilo) || 0);
+  // Costo de administración
+  $: cobroCostoAdmin = cobroMontoCalculado * (cobroPorcentajeAdmin / 100);
+  $: cobroMontoPropietario = cobroMontoCalculado - cobroCostoAdmin;
+  let cobroPorcentajeAdmin = 3;
 
   // ── Propietarios modal ──
   let showPropietariosModal = false;
@@ -71,6 +76,29 @@
   let showEditarInmuebleModal = false;
   let editarInmuebleTarget: InmuebleDashboard | null = null;
 
+  // ── Edit Contrato modal ──
+  let showEditContratoModal = false;
+  let editContratoTarget: InmuebleDashboard | null = null;
+  let editContratoForm = {
+    fecha_inicio: '',
+    fecha_fin: '',
+    duracion: '',
+    fecha_maxima_pago: '',
+    modalidad_pago: '',
+    frecuencia: '',
+    monto_base: '',
+    moneda: '',
+    indice: '',
+    periodo_indexacion: '',
+    tipo_producto: '',
+    kilos: '',
+    precio_kilo: '',
+    activo: true,
+  };
+  let editContratoSubmitting = false;
+  let editContratoSuccess = '';
+  let editContratoError = '';
+
   $: isAdmin = $auth.user?.role === 'admin';
   $: isRural = true;
   $: contratoModalidad = 'producto_agropecuario';
@@ -85,6 +113,18 @@
 
   $: if (contratoForm.duracion && contratoForm.duracion !== 'otros' && contratoForm.fecha_inicio) {
     contratoForm.fecha_fin = calcularFechaFin(contratoForm.fecha_inicio, contratoForm.duracion);
+  }
+
+  function calcularFechaFinEdit(fechaInicio: string, duracion: string): string {
+    if (!fechaInicio || !duracion || duracion === 'otros') return editContratoForm.fecha_fin;
+    const inicio = new Date(fechaInicio + 'T00:00:00');
+    const anios = parseInt(duracion);
+    inicio.setFullYear(inicio.getFullYear() + anios);
+    return inicio.toISOString().split('T')[0];
+  }
+
+  $: if (editContratoForm.duracion && editContratoForm.duracion !== 'otros' && editContratoForm.fecha_inicio) {
+    editContratoForm.fecha_fin = calcularFechaFinEdit(editContratoForm.fecha_inicio, editContratoForm.duracion);
   }
 
   onMount(() => {
@@ -143,17 +183,24 @@
   }
 
   // ── Cobro ──
-  function openCobro(inm: InmuebleDashboard) {
+  async function openCobro(inm: InmuebleDashboard) {
     if (!inm.contrato) return;
     cobroTarget = inm;
     cobroForm = {
       fecha_cobro: new Date().toISOString().split('T')[0],
-      monto: inm.contrato.monto_base?.toString() ?? '',
-      moneda_original: '',
-      monto_original: '',
-      cotizacion: '',
+      precio_kilo: '',
       observaciones: '',
     };
+    // Traer porcentaje de admin desde configuración
+    try {
+      const configRes = await fetch('http://localhost:8000/api/configuracion', { cache: 'no-store' });
+      if (configRes.ok) {
+        const config = await configRes.json();
+        cobroPorcentajeAdmin = parseFloat(config.costo_admin_rural) || 3;
+      }
+    } catch {
+      cobroPorcentajeAdmin = 3;
+    }
     cobroSuccess = '';
     cobroError = '';
     showCobroModal = true;
@@ -170,14 +217,18 @@
     cobroError = '';
     cobroSuccess = '';
     try {
+      const precioKilo = parseFloat(cobroForm.precio_kilo) || 0;
+      const parts = [`${cobroKilos} kg × $${precioKilo}/kg`];
+      if (cobroCostoAdmin > 0) parts.push(`Admin: ${cobroPorcentajeAdmin}% ($${cobroCostoAdmin.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })})`);
+      const obs = [
+        cobroForm.observaciones || '',
+        parts.join(' — '),
+      ].filter(Boolean).join(' — ');
       await api.createCobro($auth.token, {
         contrato_id: cobroTarget.contrato.id,
         fecha_cobro: cobroForm.fecha_cobro,
-        monto: parseFloat(cobroForm.monto),
-        moneda_original: cobroForm.moneda_original || undefined,
-        monto_original: cobroForm.monto_original ? parseFloat(cobroForm.monto_original) : undefined,
-        cotizacion: cobroForm.cotizacion ? parseFloat(cobroForm.cotizacion) : undefined,
-        observaciones: cobroForm.observaciones || undefined,
+        monto: cobroMontoCalculado,
+        observaciones: obs || undefined,
       });
       cobroSuccess = 'Cobro registrado exitosamente';
       setTimeout(() => {
@@ -200,6 +251,73 @@
   function closePropietarios() {
     showPropietariosModal = false;
     propietariosTarget = null;
+  }
+
+  // ── Edit Contrato ──
+  function openEditContrato(inm: InmuebleDashboard) {
+    if (!inm.contrato) return;
+    editContratoTarget = inm;
+    const c = inm.contrato;
+    let duracionInferida = '';
+    if (c.fecha_inicio && c.fecha_fin) {
+      const inicio = new Date(c.fecha_inicio + 'T00:00:00');
+      const fin = new Date(c.fecha_fin + 'T00:00:00');
+      const diffYears = Math.round((fin.getTime() - inicio.getTime()) / (365.25 * 24 * 60 * 60 * 1000));
+      if (diffYears === 1) duracionInferida = '1';
+      else if (diffYears === 2) duracionInferida = '2';
+      else if (diffYears === 3) duracionInferida = '3';
+      else duracionInferida = 'otros';
+    }
+    editContratoForm = {
+      fecha_inicio: c.fecha_inicio,
+      fecha_fin: c.fecha_fin,
+      duracion: duracionInferida,
+      fecha_maxima_pago: String(c.fecha_maxima_pago ?? 10),
+      modalidad_pago: c.modalidad_pago ?? 'producto_agropecuario',
+      frecuencia: c.frecuencia ?? 'mensual',
+      monto_base: c.monto_base != null ? String(c.monto_base) : '',
+      moneda: c.moneda || 'ARS',
+      indice: c.indice ?? '',
+      periodo_indexacion: c.periodo_indexacion ?? '',
+      tipo_producto: c.tipo_producto ?? '',
+      kilos: c.kilos != null ? String(c.kilos) : '',
+      precio_kilo: c.precio_kilo != null ? String(c.precio_kilo) : '',
+      activo: c.activo ?? true,
+    };
+    editContratoSuccess = '';
+    editContratoError = '';
+    showEditContratoModal = true;
+  }
+
+  async function submitEditContrato() {
+    if (!$auth.token || !editContratoTarget?.contrato) return;
+    editContratoSubmitting = true;
+    editContratoError = '';
+    editContratoSuccess = '';
+    try {
+      await api.updateContrato($auth.token, editContratoTarget.contrato.id, {
+        fecha_inicio: editContratoForm.fecha_inicio || undefined,
+        fecha_fin: editContratoForm.fecha_fin || undefined,
+        fecha_maxima_pago: editContratoForm.fecha_maxima_pago ? parseInt(editContratoForm.fecha_maxima_pago) : undefined,
+        modalidad_pago: editContratoForm.modalidad_pago || undefined,
+        frecuencia: editContratoForm.frecuencia || undefined,
+        monto_base: editContratoForm.monto_base ? parseFloat(editContratoForm.monto_base) : undefined,
+        moneda: editContratoForm.moneda || undefined,
+        indice: editContratoForm.indice || undefined,
+        periodo_indexacion: editContratoForm.periodo_indexacion || undefined,
+        tipo_producto: editContratoForm.tipo_producto || undefined,
+        kilos: editContratoForm.kilos ? parseFloat(editContratoForm.kilos) : undefined,
+        precio_kilo: editContratoForm.precio_kilo ? parseFloat(editContratoForm.precio_kilo) : undefined,
+        activo: editContratoForm.activo,
+      });
+      editContratoSuccess = 'Contrato actualizado';
+      await loadInmuebles();
+      setTimeout(() => { showEditContratoModal = false; }, 1200);
+    } catch (err) {
+      editContratoError = err instanceof Error ? err.message : 'Error al actualizar contrato';
+    } finally {
+      editContratoSubmitting = false;
+    }
   }
 
   // ── Historial de cobros ──
@@ -427,6 +545,7 @@
             <tr class="text-left text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/50">
               <th class="px-3 md:px-4 py-1">Dirección</th>
               <th class="px-3 md:px-4 py-1 hidden sm:table-cell">Propietario(s)</th>
+              <th class="px-3 md:px-4 py-1">Estado</th>
               <th class="px-3 md:px-4 py-1">Superficie (ha)</th>
               <th class="px-3 md:px-4 py-1">Moroso</th>
               {#if isAdmin}
@@ -446,6 +565,11 @@
                   {:else}
                     <span class="text-gray-400">-</span>
                   {/if}
+                </td>
+                <td class="px-3 md:px-4 py-1">
+                  <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium {estadoBadgeClass(inm.estado)}">
+                    {estadoLabel(inm.estado)}
+                  </span>
                 </td>
                 <td class="px-3 md:px-4 py-1 text-xs text-gray-600 dark:text-gray-400">
                   {formatSuperficie(inm.superficie)}
@@ -512,15 +636,15 @@
 
                       <!-- Editar contrato -->
                       {#if inm.contrato}
-                        <a
-                          href="/contratos/{inm.contrato.id}/editar"
-                          class="p-1.5 rounded-md text-gray-400 hover:text-violet-600 hover:bg-violet-50 dark:hover:bg-violet-900/20 transition-colors"
+                        <button
+                          on:click={() => openEditContrato(inm)}
+                          class="p-1.5 rounded-md text-gray-400 hover:text-violet-600 hover:bg-violet-50 dark:hover:bg-violet-900/20 transition-colors cursor-pointer"
                           title="Editar contrato"
                         >
                           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                           </svg>
-                        </a>
+                        </button>
                       {/if}
 
                       <!-- Editar inmueble -->
@@ -597,7 +721,7 @@
 {#if showCobroModal && cobroTarget}
   <div class="fixed inset-0 z-50 flex items-center justify-center">
     <div class="absolute inset-0 bg-black/50" on:click={cancelCobro} role="presentation"></div>
-    <div class="relative bg-white dark:bg-gray-900 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 w-full max-w-lg mx-4 p-6">
+    <div class="relative bg-white dark:bg-gray-900 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 w-full max-w-md mx-4 p-6">
       <div class="flex items-center gap-3 mb-5">
         <div class="w-10 h-10 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
           <svg class="w-5 h-5 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -629,6 +753,14 @@
       {/if}
 
       <form on:submit|preventDefault={executeCobro} class="space-y-4">
+        <!-- Kilos del contrato (solo lectura) -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Kilos (del contrato)</label>
+          <div class="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 text-sm text-gray-500 dark:text-gray-400">
+            {cobroKilos > 0 ? `${cobroKilos} kg` : 'No configurado en contrato'}
+          </div>
+        </div>
+
         <div class="grid grid-cols-2 gap-4">
           <div>
             <label for="cobro-fecha" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Fecha de cobro *</label>
@@ -636,29 +768,40 @@
               class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent" />
           </div>
           <div>
-            <label for="cobro-monto" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Monto *</label>
-            <input id="cobro-monto" type="number" step="0.01" min="0" bind:value={cobroForm.monto} required placeholder="0.00"
+            <label for="cobro-precio-kilo" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Precio por kilo *</label>
+            <input id="cobro-precio-kilo" type="number" step="0.01" min="0" bind:value={cobroForm.precio_kilo} required placeholder="0.00"
               class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent" />
           </div>
         </div>
 
-        <div class="grid grid-cols-3 gap-4">
-          <div>
-            <label for="cobro-moneda" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Moneda original</label>
-            <input id="cobro-moneda" type="text" bind:value={cobroForm.moneda_original} placeholder="USD" maxlength="3"
-              class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent" />
-          </div>
-          <div>
-            <label for="cobro-monto-orig" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Monto original</label>
-            <input id="cobro-monto-orig" type="number" step="0.01" min="0" bind:value={cobroForm.monto_original} placeholder="0.00"
-              class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent" />
-          </div>
-          <div>
-            <label for="cobro-cotizacion" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Cotización</label>
-            <input id="cobro-cotizacion" type="number" step="0.01" min="0" bind:value={cobroForm.cotizacion} placeholder="0.00"
-              class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent" />
+        <!-- Importe calculado -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Importe a cobrar</label>
+          <div class="w-full px-3 py-2.5 rounded-lg border border-emerald-300 dark:border-emerald-700 bg-emerald-50 dark:bg-emerald-900/20 text-lg font-semibold text-emerald-700 dark:text-emerald-300">
+            {cobroMontoCalculado > 0 ? `$ ${cobroMontoCalculado.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '$ 0,00'}
           </div>
         </div>
+
+        <!-- Desglose costo administración -->
+        {#if cobroCostoAdmin > 0}
+          <div class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg px-4 py-3">
+            <p class="text-xs font-medium text-amber-700 dark:text-amber-300 mb-1.5">
+              Costo de administración ({cobroPorcentajeAdmin}%)
+            </p>
+            <div class="flex justify-between text-sm">
+              <span class="text-amber-600 dark:text-amber-400">Monto bruto:</span>
+              <span class="text-amber-700 dark:text-amber-300 font-medium">$ {cobroMontoCalculado.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+            </div>
+            <div class="flex justify-between text-sm">
+              <span class="text-amber-600 dark:text-amber-400">Desc. admin:</span>
+              <span class="text-amber-700 dark:text-amber-300 font-medium">- $ {cobroCostoAdmin.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+            </div>
+            <div class="border-t border-amber-300 dark:border-amber-700 mt-1.5 pt-1.5 flex justify-between text-sm">
+              <span class="text-amber-700 dark:text-amber-300 font-semibold">Neto propietario:</span>
+              <span class="text-amber-800 dark:text-amber-200 font-bold">$ {cobroMontoPropietario.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+            </div>
+          </div>
+        {/if}
 
         <div>
           <label for="cobro-obs" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Observaciones</label>
@@ -671,7 +814,7 @@
             class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg transition-colors cursor-pointer disabled:opacity-50">
             Cancelar
           </button>
-          <button type="submit" disabled={cobroSubmitting || !cobroForm.monto}
+          <button type="submit" disabled={cobroSubmitting || !cobroForm.precio_kilo || cobroMontoCalculado <= 0}
             class="px-4 py-2 text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-400 rounded-lg transition-colors cursor-pointer disabled:cursor-not-allowed">
             {cobroSubmitting ? 'Registrando...' : 'Registrar cobro'}
           </button>
@@ -903,6 +1046,158 @@
           <button type="submit" disabled={contratoSubmitting || !contratoForm.inquilino_id || !contratoForm.fecha_fin}
             class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 rounded-lg transition-colors cursor-pointer disabled:cursor-not-allowed">
             {contratoSubmitting ? 'Creando...' : 'Crear contrato'}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+{/if}
+
+<!-- ═══ Edit Contrato Modal ═══ -->
+{#if showEditContratoModal && editContratoTarget}
+  <div class="fixed inset-0 z-50 flex items-center justify-center">
+    <div class="absolute inset-0 bg-black/50" on:click={() => { showEditContratoModal = false; }} role="presentation"></div>
+    <div class="relative bg-white dark:bg-gray-900 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 w-full max-w-2xl mx-4 p-6 max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center gap-3 mb-5">
+        <div class="w-10 h-10 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
+          <svg class="w-5 h-5 text-primary-600 dark:text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+          </svg>
+        </div>
+        <div>
+          <h3 class="text-base font-semibold text-gray-900 dark:text-gray-100">Editar contrato</h3>
+          <p class="text-sm text-gray-500 dark:text-gray-400">
+            {editContratoTarget.direccion} — {editContratoTarget.inquilino?.nombre || ''}
+          </p>
+        </div>
+      </div>
+
+      {#if editContratoError}
+        <div class="bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 text-sm rounded-lg px-4 py-3 border border-red-100 dark:border-red-800 mb-4">{editContratoError}</div>
+      {/if}
+      {#if editContratoSuccess}
+        <div class="bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300 text-sm rounded-lg px-4 py-3 border border-emerald-100 dark:border-emerald-800 mb-4">{editContratoSuccess}</div>
+      {/if}
+
+      <form on:submit|preventDefault={submitEditContrato} class="space-y-4">
+        <div class="grid grid-cols-3 gap-4">
+          <div>
+            <label for="edc-fecha-inicio" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Fecha inicio *</label>
+            <input id="edc-fecha-inicio" type="date" bind:value={editContratoForm.fecha_inicio} required
+              class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent" />
+          </div>
+          <div>
+            <label for="edc-duracion" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Duración</label>
+            <select id="edc-duracion" bind:value={editContratoForm.duracion}
+              class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+              <option value="">Seleccionar...</option>
+              <option value="1">1 año</option>
+              <option value="2">2 años</option>
+              <option value="3">3 años</option>
+              <option value="otros">Otros</option>
+            </select>
+          </div>
+          <div>
+            <label for="edc-fecha-fin" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Fecha fin *</label>
+            <input id="edc-fecha-fin" type="date" bind:value={editContratoForm.fecha_fin} required
+              class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-4">
+          <div>
+            <label for="edc-monto" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Monto base</label>
+            <input id="edc-monto" type="number" step="0.01" min="0" bind:value={editContratoForm.monto_base} placeholder="0.00"
+              class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent" />
+          </div>
+          <div>
+            <label for="edc-moneda" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Moneda</label>
+            <select id="edc-moneda" bind:value={editContratoForm.moneda}
+              class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+              <option value="ARS">ARS</option>
+              <option value="USD">USD</option>
+            </select>
+          </div>
+          <div>
+            <label for="edc-max-pago" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Días máx. pago</label>
+            <input id="edc-max-pago" type="number" min="1" bind:value={editContratoForm.fecha_maxima_pago} placeholder="10"
+              class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label for="edc-modalidad" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Modalidad</label>
+            <select id="edc-modalidad" bind:value={editContratoForm.modalidad_pago}
+              class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+              <option value="pesos_indice">Pesos + Índice</option>
+              <option value="moneda_extranjera">Moneda extranjera</option>
+              <option value="producto_agropecuario">Producto agropecuario</option>
+            </select>
+          </div>
+          <div>
+            <label for="edc-frecuencia" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Frecuencia</label>
+            <select id="edc-frecuencia" bind:value={editContratoForm.frecuencia}
+              class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+              <option value="mensual">Mensual</option>
+              <option value="trimestral">Trimestral</option>
+              <option value="anual">Anual</option>
+              <option value="vencimiento">Vencimiento</option>
+            </select>
+          </div>
+        </div>
+
+        {#if editContratoForm.modalidad_pago === 'pesos_indice'}
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label for="edc-indice" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Índice</label>
+              <input id="edc-indice" type="text" bind:value={editContratoForm.indice} placeholder="Ej: IPC"
+                class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent" />
+            </div>
+            <div>
+              <label for="edc-periodo" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Período indexación</label>
+              <input id="edc-periodo" type="text" bind:value={editContratoForm.periodo_indexacion} placeholder="Ej: trimestral"
+                class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent" />
+            </div>
+          </div>
+        {/if}
+
+        {#if editContratoForm.modalidad_pago === 'producto_agropecuario'}
+          <div class="grid grid-cols-3 gap-4">
+            <div>
+              <label for="edc-tipo-prod" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tipo producto</label>
+              <input id="edc-tipo-prod" type="text" bind:value={editContratoForm.tipo_producto}
+                class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent" />
+            </div>
+            <div>
+              <label for="edc-kilos" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Kilos</label>
+              <input id="edc-kilos" type="number" step="0.01" min="0" bind:value={editContratoForm.kilos}
+                class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent" />
+            </div>
+            <div>
+              <label for="edc-precio-kilo" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Precio/kilo</label>
+              <input id="edc-precio-kilo" type="number" step="0.01" min="0" bind:value={editContratoForm.precio_kilo}
+                class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent" />
+            </div>
+          </div>
+        {/if}
+
+        <div class="flex items-center gap-3">
+          <label class="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer">
+            <input type="checkbox" bind:checked={editContratoForm.activo}
+              class="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-primary-600 focus:ring-primary-500" />
+            Contrato activo
+          </label>
+        </div>
+
+        <div class="flex justify-end gap-3 pt-2">
+          <button type="button" on:click={() => { showEditContratoModal = false; }} disabled={editContratoSubmitting}
+            class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg transition-colors cursor-pointer disabled:opacity-50">
+            Cancelar
+          </button>
+          <button type="submit" disabled={editContratoSubmitting || !editContratoForm.fecha_inicio || !editContratoForm.fecha_fin}
+            class="px-4 py-2 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 disabled:bg-primary-400 rounded-lg transition-colors cursor-pointer disabled:cursor-not-allowed">
+            {editContratoSubmitting ? 'Guardando...' : 'Guardar cambios'}
           </button>
         </div>
       </form>

@@ -18,6 +18,7 @@ from app.crud.inmueble import (
     remove_propietario_from_inmueble,
     replace_copropiedad,
 )
+from app.crud.contrato import update_inmueble_states_for_expired_contracts
 from app.core.deps import get_current_active_user
 
 router = APIRouter()
@@ -38,6 +39,8 @@ async def list_inmuebles(
     current_user = Depends(get_current_active_user)
 ):
     """List all inmuebles with optional filters."""
+    # First, update any inmuebles with expired contracts
+    await update_inmueble_states_for_expired_contracts(db)
     return await get_inmuebles(db, skip=skip, limit=limit, estado=estado, categoria=categoria)
 
 

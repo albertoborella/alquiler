@@ -11,6 +11,7 @@ from app.models.persona import Persona
 from app.models.contrato import Contrato
 from app.models.cobro import Cobro
 from app.core.deps import get_current_active_user
+from app.crud.contrato import update_inmueble_states_for_expired_contracts
 
 router = APIRouter()
 
@@ -33,6 +34,9 @@ async def get_dashboard_inmuebles(
     - contrato activo + inquilino (if alquilado)
     - morosidad flag (overdue payments)
     """
+
+    # First, update any inmuebles with expired contracts
+    await update_inmueble_states_for_expired_contracts(db)
 
     # 1. Fetch all inmuebles with optional base filters
     stmt = select(Inmueble)
@@ -159,6 +163,8 @@ async def get_dashboard_inmuebles(
             )
             contrato_data = {
                 "id": contrato.id,
+                "inmueble_id": contrato.inmueble_id,
+                "inquilino_id": contrato.inquilino_id,
                 "fecha_inicio": str(contrato.fecha_inicio),
                 "fecha_fin": str(contrato.fecha_fin),
                 "fecha_maxima_pago": contrato.fecha_maxima_pago,
@@ -166,6 +172,13 @@ async def get_dashboard_inmuebles(
                 "frecuencia": contrato.frecuencia,
                 "monto_base": contrato.monto_base,
                 "moneda": contrato.moneda,
+                "indice": contrato.indice,
+                "periodo_indexacion": contrato.periodo_indexacion,
+                "tipo_producto": contrato.tipo_producto,
+                "kilos": contrato.kilos,
+                "precio_kilo": contrato.precio_kilo,
+                "fuente_precio_agro": contrato.fuente_precio_agro,
+                "activo": contrato.activo,
             }
 
         response.append(
