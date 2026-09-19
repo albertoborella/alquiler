@@ -22,12 +22,17 @@ async def get_current_user(
     
     Checks in order:
     1. X-Access-Token header (for Swagger UI / API clients)
-    2. access_token cookie (for browser/frontend)
-    3. Authorization: Bearer header
+    2. access_token query parameter (for SSE/EventSource which can't send headers)
+    3. access_token cookie (for browser/frontend)
+    4. Authorization: Bearer header
     """
     access_token = x_access_token
 
-    # If not in header, try cookie
+    # If not in header, try query parameter (for SSE endpoints)
+    if not access_token:
+        access_token = request.query_params.get("token")
+
+    # If not in query, try cookie
     if not access_token:
         access_token = request.cookies.get("access_token")
 

@@ -21,7 +21,7 @@ function createNotificationStore() {
   function connect(token: string) {
     if (!browser || eventSource) return;
 
-    eventSource = new EventSource('http://localhost:8000/api/notifications/stream');
+    eventSource = new EventSource(`http://localhost:8000/api/notifications/stream?token=${token}`);
 
     eventSource.onmessage = (event) => {
       try {
