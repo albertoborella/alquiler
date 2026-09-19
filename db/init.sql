@@ -89,6 +89,8 @@ CREATE TABLE cobros (
     fuente_precio VARCHAR(255),
     precio_producto DECIMAL(12,2),
     observaciones TEXT,
+    registrado_por_user_id VARCHAR(36),
+    registrado_por_nombre VARCHAR(255),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE
 );

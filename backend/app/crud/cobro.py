@@ -42,7 +42,12 @@ async def get_cobros(
     return list(result.scalars().all())
 
 
-async def create_cobro(db: AsyncSession, cobro_in: CobroCreate) -> Cobro:
+async def create_cobro(
+    db: AsyncSession,
+    cobro_in: CobroCreate,
+    registrado_por_user_id: Optional[str] = None,
+    registrado_por_nombre: Optional[str] = None,
+) -> Cobro:
     """Create a new cobro."""
     cobro_id = str(uuid.uuid4())
     
@@ -57,6 +62,8 @@ async def create_cobro(db: AsyncSession, cobro_in: CobroCreate) -> Cobro:
         fuente_precio=cobro_in.fuente_precio,
         precio_producto=cobro_in.precio_producto,
         observaciones=cobro_in.observaciones,
+        registrado_por_user_id=registrado_por_user_id,
+        registrado_por_nombre=registrado_por_nombre,
         created_at=datetime.utcnow(),
     )
     

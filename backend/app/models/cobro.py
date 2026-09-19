@@ -18,6 +18,8 @@ class CobroBase(SQLModel):
     fuente_precio: Optional[str] = Field(default=None, max_length=255)
     precio_producto: Optional[float] = None
     observaciones: Optional[str] = Field(default=None, max_length=1000)
+    registrado_por_user_id: Optional[str] = Field(default=None, max_length=36)
+    registrado_por_nombre: Optional[str] = Field(default=None, max_length=255)
 
 
 class Cobro(CobroBase, table=True):
@@ -56,3 +58,5 @@ class CobroPublic(CobroBase):
     id: str
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
+    registrado_por_user_id: Optional[str] = None
+    registrado_por_nombre: Optional[str] = None

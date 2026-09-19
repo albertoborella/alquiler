@@ -66,7 +66,12 @@ async def create_new_cobro(
     current_user: User = Depends(get_current_active_user)
 ):
     """Create a new cobro."""
-    cobro = await create_cobro(db, cobro_in)
+    cobro = await create_cobro(
+        db,
+        cobro_in,
+        registrado_por_user_id=current_user.id,
+        registrado_por_nombre=current_user.full_name or current_user.email,
+    )
 
     # Emit notification to admin users
     try:

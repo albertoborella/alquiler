@@ -258,6 +258,7 @@
               <th class="px-3 md:px-4 py-1">Monto</th>
               <th class="px-3 md:px-4 py-1 hidden sm:table-cell">Inmueble</th>
               <th class="px-3 md:px-4 py-1 hidden md:table-cell">Propietario</th>
+              <th class="px-3 md:px-4 py-1 hidden lg:table-cell">Registrado por</th>
               <th class="px-3 md:px-4 py-1">Observaciones</th>
               {#if isAdmin}
                 <th class="px-3 md:px-4 py-1 text-right">Acciones</th>
@@ -273,6 +274,7 @@
                 </td>
                 <td class="px-3 md:px-4 py-1 text-xs text-gray-700 dark:text-gray-300 hidden sm:table-cell">{c.inmuebleDireccion}</td>
                 <td class="px-3 md:px-4 py-1 text-xs text-gray-700 dark:text-gray-300 hidden md:table-cell">{c.propietarioNombre}</td>
+                <td class="px-3 md:px-4 py-1 text-xs text-gray-500 dark:text-gray-400 hidden lg:table-cell">{c.registrado_por_nombre || '-'}</td>
                 <td class="px-3 md:px-4 py-1 text-xs text-gray-500 dark:text-gray-400 truncate max-w-[200px]">{c.observaciones || '-'}</td>
                 {#if isAdmin}
                   <td class="px-3 md:px-4 py-1 text-right">

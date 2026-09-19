@@ -146,6 +146,8 @@ export interface CobroPublic {
   fuente_precio: string | null;
   precio_producto: number | null;
   observaciones: string | null;
+  registrado_por_user_id: string | null;
+  registrado_por_nombre: string | null;
   created_at: string | null;
   updated_at: string | null;
 }

@@ -905,6 +905,7 @@
                 <th class="px-3 py-2">Fecha</th>
                 <th class="px-3 py-2 text-right">Monto</th>
                 <th class="px-3 py-2">Moneda</th>
+                <th class="px-3 py-2 hidden sm:table-cell">Registrado por</th>
                 <th class="px-3 py-2">Obs.</th>
               </tr>
             </thead>
@@ -916,6 +917,7 @@
                     {formatCurrency(cobro.monto, cobro.moneda_original)}
                   </td>
                   <td class="px-3 py-2 text-[13px] text-gray-600 dark:text-gray-400">{cobro.moneda_original ?? 'ARS'}</td>
+                  <td class="px-3 py-2 text-[12px] text-gray-500 dark:text-gray-400 hidden sm:table-cell">{cobro.registrado_por_nombre ?? '-'}</td>
                   <td class="px-3 py-2 text-[12px] text-gray-500 dark:text-gray-400 max-w-[120px] truncate">{cobro.observaciones ?? '-'}</td>
                 </tr>
               {/each}

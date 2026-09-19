@@ -717,3 +717,5 @@ Todo parece andar bien, quisiera que antes de seguir hagas un commit y pushees a
 Ok. Ahora lo que quisiera es lo siguiente: fijate en la documentacion en el stack tecnologico como para hacer noficaciones, y quiero lo siguiente, si se esta logueado con el rol de empleado, que tambien pueda hacer cobros habilitando el icono en las tablas de inmuebles tanto urbanas como rurales, pero quiero que cuando realice un cobro, en el o los usuarios con el rol de administrador, vean un alert en la pantalla que esten del sistema un alert que indique Cobro realizado, Importe, Inquilino y nombre de usuario que registra el cobro. Entiendes?
 
 Ahora el cobro lo hace sin problemas el usuario con rol de empleado pero no sale el aviso alert en el administrador.
+
+Perfecto, pero quiero que permanezca el alert el la pantalla del adminstrador y se vallan agregando todos los alert a continuacion hasta que el administrador los vea y los saque con esc o alguna X. Sería interesante que cada cobro quede en la tabla de cobranza el nombre del usuario logueado para saber quien lo hizo.

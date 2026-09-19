@@ -109,11 +109,9 @@
   $: showSidebar = !!$auth.token && $page.url.pathname !== '/login' && $page.url.pathname !== '/register';
   $: isAdmin = $auth.user?.role === 'admin';
 
-  // Auto-dismiss notifications after 8 seconds
-  $: if ($notifications.length > 0) {
-    const latest = $notifications[0];
-    if (latest) {
-      setTimeout(() => notifications.dismiss(latest.id), 8000);
+  function handleKeydown(event: KeyboardEvent) {
+    if (event.key === 'Escape') {
+      notifications.clearAll();
     }
   }
 
@@ -121,6 +119,8 @@
     return `$ ${amount.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   }
 </script>
+
+<svelte:window on:keydown={handleKeydown} />
 
 <div class="min-h-screen flex flex-col">
   <!-- Navbar -->
@@ -272,8 +272,18 @@
   </main>
 
   <!-- Notification toasts (admin only) -->
-  {#if isAdmin}
+  {#if isAdmin && $notifications.length > 0}
     <div class="fixed top-20 right-4 z-[100] flex flex-col gap-3 max-w-sm w-full pointer-events-none">
+      {#if $notifications.length > 1}
+        <div class="pointer-events-auto flex justify-end">
+          <button
+            on:click={() => notifications.clearAll()}
+            class="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-1.5 shadow-sm cursor-pointer"
+          >
+            Limpiar todo ({$notifications.length})
+          </button>
+        </div>
+      {/if}
       {#each $notifications as notif (notif.id)}
         <div
           class="pointer-events-auto bg-white dark:bg-gray-900 border border-emerald-200 dark:border-emerald-800 rounded-xl shadow-lg p-4 animate-slide-in"
