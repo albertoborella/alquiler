@@ -713,3 +713,5 @@ Click outside, press Esc key, or fix the code to dismiss.
 You can also disable this overlay by setting server.hmr.overlay to false in vite.config.ts.
 
 Todo parece andar bien, quisiera que antes de seguir hagas un commit y pushees al repositorio de gihub
+
+Ok. Ahora lo que quisiera es lo siguiente: fijate en la documentacion en el stack tecnologico como para hacer noficaciones, y quiero lo siguiente, si se esta logueado con el rol de empleado, que tambien pueda hacer cobros habilitando el icono en las tablas de inmuebles tanto urbanas como rurales, pero quiero que cuando realice un cobro, en el o los usuarios con el rol de administrador, vean un alert en la pantalla que esten del sistema un alert que indique Cobro realizado, Importe, Inquilino y nombre de usuario que registra el cobro. Entiendes?

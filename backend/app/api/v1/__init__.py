@@ -8,6 +8,7 @@ from app.api.v1.cobros import router as cobros_router
 from app.api.v1.comprobantes import router as comprobantes_router
 from app.api.v1.dashboard import router as dashboard_router
 from app.api.v1.informes import router as informes_router
+from app.api.v1.notifications import router as notifications_router
 
 api_router = APIRouter()
 
@@ -21,3 +22,4 @@ api_router.include_router(comprobantes_router, prefix="/comprobantes", tags=["co
 api_router.include_router(dashboard_router, prefix="/dashboard", tags=["dashboard"])
 api_router.include_router(configuracion_router, tags=["configuracion"])
 api_router.include_router(informes_router, prefix="/informes", tags=["informes"])
+api_router.include_router(notifications_router, prefix="/notifications", tags=["notifications"])

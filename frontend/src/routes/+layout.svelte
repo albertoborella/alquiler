@@ -8,6 +8,8 @@
   import Sidebar from '$lib/components/Sidebar.svelte';
   import { onMount } from 'svelte';
   import { browser } from '$app/environment';
+  import { notifications } from '$lib/stores/notifications';
+  import type { Notification } from '$lib/stores/notifications';
 
   // ── Inactivity timer (30 min) ──
   const INACTIVITY_TIMEOUT = 30 * 60 * 1000;
@@ -105,6 +107,19 @@
   }
 
   $: showSidebar = !!$auth.token && $page.url.pathname !== '/login' && $page.url.pathname !== '/register';
+  $: isAdmin = $auth.user?.role === 'admin';
+
+  // Auto-dismiss notifications after 8 seconds
+  $: if ($notifications.length > 0) {
+    const latest = $notifications[0];
+    if (latest) {
+      setTimeout(() => notifications.dismiss(latest.id), 8000);
+    }
+  }
+
+  function formatCurrency(amount: number): string {
+    return `$ ${amount.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  }
 </script>
 
 <div class="min-h-screen flex flex-col">
@@ -255,4 +270,50 @@
       <slot />
     </div>
   </main>
+
+  <!-- Notification toasts (admin only) -->
+  {#if isAdmin}
+    <div class="fixed top-20 right-4 z-[100] flex flex-col gap-3 max-w-sm w-full pointer-events-none">
+      {#each $notifications as notif (notif.id)}
+        <div
+          class="pointer-events-auto bg-white dark:bg-gray-900 border border-emerald-200 dark:border-emerald-800 rounded-xl shadow-lg p-4 animate-slide-in"
+          role="alert"
+        >
+          <div class="flex items-start gap-3">
+            <div class="w-9 h-9 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center shrink-0 mt-0.5">
+              <svg class="w-5 h-5 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+              </svg>
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-semibold text-emerald-700 dark:text-emerald-300">Cobro realizado</p>
+              <div class="mt-1 space-y-0.5">
+                <p class="text-sm text-gray-700 dark:text-gray-300">
+                  <span class="font-medium">Importe:</span> {formatCurrency(notif.monto)}
+                </p>
+                <p class="text-sm text-gray-700 dark:text-gray-300">
+                  <span class="font-medium">Inquilino:</span> {notif.inquilino_nombre}
+                </p>
+                <p class="text-sm text-gray-700 dark:text-gray-300">
+                  <span class="font-medium">Inmueble:</span> {notif.inmueble_direccion}
+                </p>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  Registrado por: {notif.usuario_nombre}
+                </p>
+              </div>
+            </div>
+            <button
+              on:click={() => notifications.dismiss(notif.id)}
+              class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 shrink-0 cursor-pointer"
+              aria-label="Cerrar"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      {/each}
+    </div>
+  {/if}
 </div>

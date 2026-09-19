@@ -1,10 +1,14 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
 from typing import List, Optional
 from datetime import date
 
 from app.db.session import get_db
 from app.models.cobro import CobroCreate, CobroUpdate, CobroPublic
+from app.models.contrato import Contrato
+from app.models.persona import Persona
+from app.models.user import User
 from app.crud.cobro import (
     get_cobro,
     get_cobros_by_contrato,
@@ -14,6 +18,7 @@ from app.crud.cobro import (
     delete_cobro,
 )
 from app.core.deps import get_current_active_user
+from app.api.v1.notifications import emit_cobro_notification
 
 router = APIRouter()
 
@@ -58,10 +63,41 @@ async def list_cobros_by_contrato(
 async def create_new_cobro(
     cobro_in: CobroCreate,
     db: AsyncSession = Depends(get_db),
-    current_user = Depends(get_current_active_user)
+    current_user: User = Depends(get_current_active_user)
 ):
     """Create a new cobro."""
-    return await create_cobro(db, cobro_in)
+    cobro = await create_cobro(db, cobro_in)
+
+    # Emit notification to admin users
+    try:
+        result = await db.execute(select(Contrato).where(Contrato.id == cobro_in.contrato_id))
+        contrato = result.scalar_one_or_none()
+        inquilino_nombre = ""
+        inmueble_direccion = ""
+        if contrato:
+            # Get inquilino name
+            inq_result = await db.execute(select(Persona).where(Persona.id == contrato.inquilino_id))
+            inquilino = inq_result.scalar_one_or_none()
+            if inquilino:
+                inquilino_nombre = inquilino.nombre
+            # Get inmueble address
+            from app.models.inmueble import Inmueble
+            inm_result = await db.execute(select(Inmueble).where(Inmueble.id == contrato.inmueble_id))
+            inmueble = inm_result.scalar_one_or_none()
+            if inmueble:
+                inmueble_direccion = inmueble.direccion
+
+        await emit_cobro_notification(
+            usuario_nombre=current_user.full_name or current_user.email,
+            usuario_email=current_user.email,
+            monto=cobro.monto,
+            inquilino_nombre=inquilino_nombre,
+            inmueble_direccion=inmueble_direccion,
+        )
+    except Exception:
+        pass  # Notification failure should not block cobro creation
+
+    return cobro
 
 
 @router.put("/{cobro_id}", response_model=CobroPublic)
