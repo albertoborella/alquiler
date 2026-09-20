@@ -135,11 +135,9 @@
 
   function formatDate(dateStr: string | null): string {
     if (!dateStr) return '-';
-    return new Date(dateStr).toLocaleDateString('es-AR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-    });
+    const [y, m, d] = dateStr.split('T')[0].split('-');
+    return `${y.slice(2)}/${m}/${d}`;
+  }
   }
 
   function getRoleBadgeClass(role: string): string {

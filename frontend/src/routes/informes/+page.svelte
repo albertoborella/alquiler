@@ -77,7 +77,7 @@
 
   function formatDate(dateStr: string): string {
     const [y, m, d] = dateStr.split('-');
-    return `${d}/${m}/${y}`;
+    return `${y.slice(2)}/${m}/${d}`;
   }
 
   function formatMes(mesKey: string): string {

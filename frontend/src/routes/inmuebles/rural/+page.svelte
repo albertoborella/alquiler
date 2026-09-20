@@ -450,6 +450,12 @@
     return `${value.toLocaleString('es-AR')} ha`;
   }
 
+  function formatDate(dateStr: string | null): string {
+    if (!dateStr) return '-';
+    const [y, m, d] = dateStr.split('T')[0].split('-');
+    return `${y.slice(2)}/${m}/${d}`;
+  }
+
   function formatCurrency(amount: number | null, currency: string | null): string {
     if (amount === null) return '-';
     const sym = currency === 'USD' ? 'US$' : '$';
@@ -912,7 +918,7 @@
             <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
               {#each historialCobros as cobro (cobro.id)}
                 <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50">
-                  <td class="px-3 py-2 text-[13px] text-gray-900 dark:text-gray-100">{cobro.fecha_cobro}</td>
+                  <td class="px-3 py-2 text-[13px] text-gray-900 dark:text-gray-100">{formatDate(cobro.fecha_cobro)}</td>
                   <td class="px-3 py-2 text-[13px] text-gray-900 dark:text-gray-100 text-right font-medium">
                     {formatCurrency(cobro.monto, cobro.moneda_original)}
                   </td>

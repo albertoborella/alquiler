@@ -181,7 +181,8 @@
 
   function formatDate(d: string | null): string {
     if (!d) return '-';
-    return new Date(d).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    const [y, m, dd] = d.split('T')[0].split('-');
+    return `${y.slice(2)}/${m}/${dd}`;
   }
 </script>
 

@@ -6,6 +6,7 @@
   import { page } from '$app/stores';
   import { goto } from '$app/navigation';
   import Sidebar from '$lib/components/Sidebar.svelte';
+  import GuideModal from '$lib/components/GuideModal.svelte';
   import { onMount } from 'svelte';
   import { browser } from '$app/environment';
   import { notifications } from '$lib/stores/notifications';
@@ -79,6 +80,7 @@
   });
 
   let mobileMenuOpen = false;
+  let showGuide = false;
 
   function toggleMenu() {
     mobileMenuOpen = !mobileMenuOpen;
@@ -159,6 +161,17 @@
         <div class="hidden sm:flex sm:items-center sm:gap-4">
           {#if $auth.token}
             <button
+              on:click={() => showGuide = true}
+              class="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer"
+              title="Instructivo de uso"
+              aria-label="Instructivo de uso"
+            >
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </button>
+
+            <button
               on:click={() => theme.toggle()}
               class="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer"
               title={$theme === 'dark' ? 'Modo claro' : 'Modo oscuro'}
@@ -198,6 +211,17 @@
 
         <div class="flex items-center gap-2 sm:hidden">
           {#if $auth.token}
+            <button
+              on:click={() => showGuide = true}
+              class="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer"
+              title="Instructivo de uso"
+              aria-label="Instructivo de uso"
+            >
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </button>
+
             <button
               on:click={() => theme.toggle()}
               class="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer"
@@ -327,3 +351,5 @@
     </div>
   {/if}
 </div>
+
+<GuideModal bind:open={showGuide} on:close={() => showGuide = false} />
