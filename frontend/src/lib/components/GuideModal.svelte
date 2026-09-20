@@ -173,16 +173,39 @@
           </div>
         </section>
 
-        <!-- Admin -->
+        <!-- Permisos por Rol -->
         <section>
           <h3 class="text-base font-semibold text-gray-900 dark:text-gray-100 mb-2 flex items-center gap-2">
             <span class="w-6 h-6 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center text-[11px] font-bold text-primary-600 dark:text-primary-400">9</span>
-            Secciones de Administrador
+            Permisos por Rol
           </h3>
-          <div class="ml-8 space-y-2">
-            <p><strong>Usuarios:</strong> Creá, editá o desactivá usuarios del sistema. Asigná roles (admin o empleado). Al crear un usuario, asignale una contraseña inicial; el usuario deberá cambiarla después por seguridad.</p>
-            <p><strong>Configuración:</strong> Cambiá el nombre de la aplicación, el nombre de la inmobiliaria, los tamaños de fuente y los porcentajes de costo de administración.</p>
-            <p><strong>Gestión de usuarios:</strong> El superadministrador se crea desde la consola con un script. Los demás usuarios los crea el admin desde la app. Cada usuario puede cambiar su propia contraseña desde el ícono &#128273; en la barra superior.</p>
+          <div class="ml-8 space-y-3">
+            <div class="bg-gray-50 dark:bg-gray-800 rounded-lg px-4 py-3">
+              <p class="font-semibold text-gray-900 dark:text-gray-100 mb-1">Empleado</p>
+              <ul class="space-y-1 list-disc list-inside text-gray-600 dark:text-gray-400 text-xs">
+                <li>Ver inmuebles urbanos y rurales</li>
+                <li>Ver personas (propietarios e inquilinos)</li>
+                <li>Ver contratos de alquiler</li>
+                <li>Ver historial de cobros</li>
+                <li>Ver informes de propietarios</li>
+                <li>Cambiar su propia contraseña</li>
+              </ul>
+            </div>
+            <div class="bg-gray-50 dark:bg-gray-800 rounded-lg px-4 py-3">
+              <p class="font-semibold text-gray-900 dark:text-gray-100 mb-1">Administrador</p>
+              <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Todo lo del empleado, más:</p>
+              <ul class="space-y-1 list-disc list-inside text-gray-600 dark:text-gray-400 text-xs">
+                <li>Crear, editar y eliminar inmuebles</li>
+                <li>Crear, editar y eliminar personas</li>
+                <li>Crear, editar y eliminar contratos</li>
+                <li>Registrar, editar y eliminar cobros</li>
+                <li>Generar contratos desde la tabla de inmuebles</li>
+                <li>Registrar cobros directo desde la tabla de inmuebles</li>
+                <li>Ver propietarios y historial desde la tabla de inmuebles</li>
+                <li>Gestionar usuarios (crear, editar, desactivar)</li>
+                <li>Configurar la aplicación (nombre, costos de administración)</li>
+              </ul>
+            </div>
           </div>
         </section>
 
