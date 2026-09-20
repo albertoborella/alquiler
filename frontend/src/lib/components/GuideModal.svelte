@@ -152,6 +152,7 @@
           </h3>
           <div class="ml-8 space-y-2">
             <p>En esta sección ves el historial de todos los cobros registrados.</p>
+            <p><strong>Registrar cobro:</strong> Tanto admin como empleado pueden registrar cobros. Al hacerlo, el administrador recibe una notificación en pantalla con el monto, el inquilino, el inmueble y el nombre del empleado que lo registró.</p>
             <p><strong>Filtrar:</strong> Podés filtrar por propietario, inmueble o rango de fechas.</p>
             <p><strong>Eliminar:</strong> Solo los administradores pueden eliminar cobros.</p>
             <p>Los cobros se ordenan automáticamente del más reciente al más antiguo.</p>
@@ -186,7 +187,8 @@
                 <li>Ver inmuebles urbanos y rurales</li>
                 <li>Ver personas (propietarios e inquilinos)</li>
                 <li>Ver contratos de alquiler</li>
-                <li>Ver historial de cobros</li>
+                <li>Registrar cobros (el admin recibe una notificación con el monto y el nombre del empleado que lo registró)</li>
+                <li>Ver historial de cobros propios</li>
                 <li>Ver informes de propietarios</li>
                 <li>Cambiar su propia contraseña</li>
               </ul>
