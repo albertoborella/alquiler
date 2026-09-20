@@ -50,14 +50,27 @@
             Iniciar Sesión
           </h3>
           <p class="ml-8">
-            Ingresá tu email y contraseña en la pantalla de login. Si es tu primera vez, pedile al administrador que te cree un usuario.
+            Ingresá tu email y contraseña en la pantalla de login. Los usuarios los crea el administrador desde la sección <strong>Usuarios</strong>. Si es tu primera vez, pedile al admin que te asigne una contraseña.
           </p>
+        </section>
+
+        <!-- Cambiar Contraseña -->
+        <section>
+          <h3 class="text-base font-semibold text-gray-900 dark:text-gray-100 mb-2 flex items-center gap-2">
+            <span class="w-6 h-6 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center text-[11px] font-bold text-primary-600 dark:text-primary-400">2</span>
+            Cambiar Contraseña
+          </h3>
+          <div class="ml-8 space-y-2">
+            <p>Por seguridad, se recomienda que cada usuario cambie la contraseña que le asignó el administrador.</p>
+            <p><strong>Pasos:</strong> Hacé clic en el ícono <strong>&#128273;</strong> (llave) en la barra superior. Poné tu contraseña actual, la nueva y confirmala. La nueva contraseña debe tener al menos 6 caracteres.</p>
+            <p><strong>Nota:</strong> Solo podés cambiar tu propia contraseña. El administrador no puede ver las contraseñas de los usuarios.</p>
+          </div>
         </section>
 
         <!-- Navegación -->
         <section>
           <h3 class="text-base font-semibold text-gray-900 dark:text-gray-100 mb-2 flex items-center gap-2">
-            <span class="w-6 h-6 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center text-[11px] font-bold text-primary-600 dark:text-primary-400">2</span>
+            <span class="w-6 h-6 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center text-[11px] font-bold text-primary-600 dark:text-primary-400">3</span>
             Navegación
           </h3>
           <p class="ml-8 mb-2">
@@ -94,7 +107,7 @@
         <!-- Inmuebles -->
         <section>
           <h3 class="text-base font-semibold text-gray-900 dark:text-gray-100 mb-2 flex items-center gap-2">
-            <span class="w-6 h-6 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center text-[11px] font-bold text-primary-600 dark:text-primary-400">3</span>
+            <span class="w-6 h-6 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center text-[11px] font-bold text-primary-600 dark:text-primary-400">4</span>
             Gestionar Inmuebles
           </h3>
           <div class="ml-8 space-y-2">
@@ -107,7 +120,7 @@
         <!-- Personas -->
         <section>
           <h3 class="text-base font-semibold text-gray-900 dark:text-gray-100 mb-2 flex items-center gap-2">
-            <span class="w-6 h-6 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center text-[11px] font-bold text-primary-600 dark:text-primary-400">4</span>
+            <span class="w-6 h-6 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center text-[11px] font-bold text-primary-600 dark:text-primary-400">5</span>
             Gestionar Personas
           </h3>
           <div class="ml-8 space-y-2">
@@ -121,7 +134,7 @@
         <!-- Contratos -->
         <section>
           <h3 class="text-base font-semibold text-gray-900 dark:text-gray-100 mb-2 flex items-center gap-2">
-            <span class="w-6 h-6 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center text-[11px] font-bold text-primary-600 dark:text-primary-400">5</span>
+            <span class="w-6 h-6 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center text-[11px] font-bold text-primary-600 dark:text-primary-400">6</span>
             Contratos de Alquiler
           </h3>
           <div class="ml-8 space-y-2">
@@ -134,7 +147,7 @@
         <!-- Cobros -->
         <section>
           <h3 class="text-base font-semibold text-gray-900 dark:text-gray-100 mb-2 flex items-center gap-2">
-            <span class="w-6 h-6 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center text-[11px] font-bold text-primary-600 dark:text-primary-400">6</span>
+            <span class="w-6 h-6 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center text-[11px] font-bold text-primary-600 dark:text-primary-400">7</span>
             Cobros
           </h3>
           <div class="ml-8 space-y-2">
@@ -148,7 +161,7 @@
         <!-- Informes -->
         <section>
           <h3 class="text-base font-semibold text-gray-900 dark:text-gray-100 mb-2 flex items-center gap-2">
-            <span class="w-6 h-6 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center text-[11px] font-bold text-primary-600 dark:text-primary-400">7</span>
+            <span class="w-6 h-6 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center text-[11px] font-bold text-primary-600 dark:text-primary-400">8</span>
             Informes de Propietarios
           </h3>
           <div class="ml-8 space-y-2">
@@ -163,12 +176,13 @@
         <!-- Admin -->
         <section>
           <h3 class="text-base font-semibold text-gray-900 dark:text-gray-100 mb-2 flex items-center gap-2">
-            <span class="w-6 h-6 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center text-[11px] font-bold text-primary-600 dark:text-primary-400">8</span>
+            <span class="w-6 h-6 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center text-[11px] font-bold text-primary-600 dark:text-primary-400">9</span>
             Secciones de Administrador
           </h3>
           <div class="ml-8 space-y-2">
-            <p><strong>Usuarios:</strong> Creá, editá o desactivá usuarios del sistema. Asigná roles (admin o empleado).</p>
+            <p><strong>Usuarios:</strong> Creá, editá o desactivá usuarios del sistema. Asigná roles (admin o empleado). Al crear un usuario, asignale una contraseña inicial; el usuario deberá cambiarla después por seguridad.</p>
             <p><strong>Configuración:</strong> Cambiá el nombre de la aplicación, el nombre de la inmobiliaria, los tamaños de fuente y los porcentajes de costo de administración.</p>
+            <p><strong>Gestión de usuarios:</strong> El superadministrador se crea desde la consola con un script. Los demás usuarios los crea el admin desde la app. Cada usuario puede cambiar su propia contraseña desde el ícono &#128273; en la barra superior.</p>
           </div>
         </section>
 
@@ -183,6 +197,7 @@
             <li>Si tu sesión expira por inactividad (30 min), vas a necesitar volver a iniciar sesión.</li>
             <li>Las fechas en las tablas se muestran en formato AA/mm/dd para que se puedan ordenar correctamente.</li>
             <li>Las notificaciones de cobros aparecen arriba a la derecha para los administradores.</li>
+            <li>Cambiá tu contraseña en cualquier momento desde el ícono &#128273; en la barra superior.</li>
           </ul>
         </section>
 

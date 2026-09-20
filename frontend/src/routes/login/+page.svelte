@@ -92,12 +92,6 @@
           />
         </div>
 
-        <div class="text-right">
-          <a href="#" class="text-sm text-primary-600 hover:text-primary-700">
-            Cambiar Contraseña
-          </a>
-        </div>
-
         <button
           type="submit"
           disabled={loading}

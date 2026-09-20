@@ -58,17 +58,26 @@ pip install -r requirements.txt
 uvicorn app.main:app --reload --port 8000
 ```
 
-### Crear Superadministrador
+### Gestión de Usuarios
 
-El primer superadmin se crea con el script interactivo (solo una vez):
+La aplicación utiliza un modelo de usuarios con roles jerárquicos:
 
-```bash
-podman-compose exec backend python -m app.scripts.createsuperuser
-```
+| Rol | Permisos |
+|-----|----------|
+| `admin` | Acceso total: crear/editar/eliminar usuarios, gestionar todos los módulos |
+| `empleado` | Acceso a módulos operativos (inmuebles, contratos, cobros, personas) |
 
-El script pide: email, nombre completo (opcional), y contraseña con confirmación.
+**Flujo de alta de usuarios:**
 
-Los usuarios restantes se crean desde la API (`POST /api/users`, solo admin).
+1. **Superadmin (primera vez):** Se crea desde la consola con un script interactivo:
+   ```bash
+   podman-compose exec backend python -m app.scripts.createsuperuser
+   ```
+   El script pide: email, nombre completo (opcional), y contraseña con confirmación.
+
+2. **Usuarios adicionales:** Los crea el superadmin o un admin desde la app (sección *Usuarios*), asignando email, nombre, contraseña y rol.
+
+3. **Cambio de contraseña:** Cada usuario puede cambiar su propia contraseña desde el link *Cambiar Contraseña* en la pantalla de login, o desde dentro de la app. La contraseña actual es requerida para confirmar el cambio.
 
 ### Autenticación
 
@@ -118,6 +127,7 @@ npm run dev
 - `POST /api/logout` - Cerrar sesión
 - `POST /api/refresh` - Refrescar token
 - `GET /api/me` - Obtener usuario actual
+- `POST /api/change-password` - Cambiar contraseña propia (requiere auth)
 
 ### Usuarios
 - `GET /api/users` - Listar usuarios (autenticado, filtrar con `?role=admin`)

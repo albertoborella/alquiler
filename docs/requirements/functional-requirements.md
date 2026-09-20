@@ -8,28 +8,39 @@
 
 ### FR-02: Gestion de Usuarios
 - Solo el **Administrador** puede crear, modificar y eliminar usuarios del sistema.
-- Cada usuario tiene un **rol** asignado: Administrador, Empleado o Contable.
+- Cada usuario tiene un **rol** asignado: Administrador o Empleado.
+- El superadministrador se crea desde la consola con un script (`python -m app.scripts.createsuperuser`).
+- Los demás usuarios los crea el administrador desde la sección **Usuarios** de la aplicación, asignando email, nombre, contraseña y rol.
+
+### FR-02a: Cambio de Contraseña
+- Cada usuario puede cambiar su propia contraseña desde el ícono &#128273; (llave) en la barra de navegación.
+- El formulario requiere: contraseña actual, nueva contraseña y confirmación.
+- La nueva contraseña debe tener al menos 6 caracteres.
+- Se verifica que la contraseña actual sea correcta antes de permitir el cambio.
+- El administrador no puede ver ni resetear las contraseñas de otros usuarios; cada usuario gestiona la suya.
+- Flujo recomendado: el administrador crea el usuario con una contraseña inicial, y el usuario la cambia por una propia por seguridad.
 
 ### FR-03: Control de Acceso por Rol
 
-| Funcionalidad | Admin | Empleado | Contable |
-|---------------|-------|----------|----------|
-| Visualizar datos | Si | Si | Si |
-| Registrar cobros | Si | No | Si |
-| Eliminar inmuebles | Si | No | No |
-| Eliminar propietarios | Si | No | No |
-| Eliminar inquilinos | Si | No | No |
-| Eliminar contratos | Si | No | No |
-| Eliminar cobros | Si | No | No |
-| Modificar cobros | Si | No | No |
-| Gestionar usuarios | Si | No | No |
-| Gestionar inquilinos | Si | No | No |
-| Ver propietarios desde tabla inmuebles | Si | No | No |
-| Registrar cobro desde tabla inmuebles | Si | No | No |
-| Ver historial de cobros desde tabla | Si | No | No |
-| Editar contrato desde tabla inmuebles | Si | No | No |
-| Generar contrato desde tabla inmuebles | Si | No | No |
-| Crear inmueble desde tabla inmuebles | Si | No | No |
+| Funcionalidad | Admin | Empleado |
+|---------------|-------|----------|
+| Visualizar datos | Si | Si |
+| Registrar cobros | Si | No |
+| Eliminar inmuebles | Si | No |
+| Eliminar propietarios | Si | No |
+| Eliminar inquilinos | Si | No |
+| Eliminar contratos | Si | No |
+| Eliminar cobros | Si | No |
+| Modificar cobros | Si | No |
+| Gestionar usuarios | Si | No |
+| Gestionar inquilinos | Si | No |
+| Cambiar contraseña propia | Si | Si |
+| Ver propietarios desde tabla inmuebles | Si | No |
+| Registrar cobro desde tabla inmuebles | Si | No |
+| Ver historial de cobros desde tabla | Si | No |
+| Editar contrato desde tabla inmuebles | Si | No |
+| Generar contrato desde tabla inmuebles | Si | No |
+| Crear inmueble desde tabla inmuebles | Si | No |
 
 ---
 

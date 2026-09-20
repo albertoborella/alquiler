@@ -197,24 +197,20 @@ async def delete_existing_user(
 async def change_password(
     data: ChangePasswordRequest,
     db: AsyncSession = Depends(get_db),
-    current_user: dict = Depends(get_current_active_user)
+    current_user = Depends(get_current_active_user)
 ):
     """Change current user's password."""
     from app.core.security import verify_password, get_password_hash
 
-    user = await get_user(db, current_user["id"])
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-
-    if not verify_password(data.current_password, user.hashed_password):
+    if not verify_password(data.current_password, current_user.hashed_password):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="La contraseña actual es incorrecta"
         )
 
-    user.hashed_password = get_password_hash(data.new_password)
-    user.updated_at = datetime.utcnow()
-    db.add(user)
+    current_user.hashed_password = get_password_hash(data.new_password)
+    current_user.updated_at = datetime.utcnow()
+    db.add(current_user)
     await db.commit()
 
     return {"message": "Contraseña actualizada correctamente"}

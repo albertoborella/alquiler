@@ -188,6 +188,17 @@
               {/if}
             </button>
 
+            <a
+              href="/change-password"
+              class="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              title="Cambiar contraseña"
+              aria-label="Cambiar contraseña"
+            >
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+              </svg>
+            </a>
+
             <div class="flex items-center gap-3 ml-2">
               <div class="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-300 flex items-center justify-center text-sm font-semibold">
                 {getInitials($auth.user?.full_name ?? null, $auth.user?.email ?? '')}
@@ -269,6 +280,13 @@
                 {$auth.user?.full_name || $auth.user?.email}
               </span>
             </div>
+            <a
+              href="/change-password"
+              class="block px-3 py-2 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 text-sm font-medium"
+              on:click={closeMenu}
+            >
+              Cambiar Contraseña
+            </a>
             <button
               on:click={() => { closeMenu(); logout(); }}
               class="block w-full text-left px-3 py-2 rounded-md text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 text-sm font-medium cursor-pointer"
